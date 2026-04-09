@@ -15,26 +15,26 @@ Réponds UNIQUEMENT avec le JSON.`;
 
 export async function queryData(userQuery: string): Promise<{ answer: string; sources: string[] }> {
   // Gather all data from Redis (exclude :pdf, :pending, and :ids keys)
-  const factureKeys = (await redis.keys('facture:*')).filter(k => !k.includes(':pdf') && !k.includes(':pending') && k !== 'facture:ids');
-  const mouvementKeys = (await redis.keys('mouvement:*')).filter(k => k !== 'mouvement:ids');
-  const rapprochementKeys = (await redis.keys('rapprochement:*')).filter(k => k !== 'rapprochement:ids');
+  const factureKeys = (await redis.keys('facture:*')).filter((k: string) => !k.includes(':pdf') && !k.includes(':pending') && k !== 'facture:ids');
+  const mouvementKeys = (await redis.keys('mouvement:*')).filter((k: string) => k !== 'mouvement:ids');
+  const rapprochementKeys = (await redis.keys('rapprochement:*')).filter((k: string) => k !== 'rapprochement:ids');
 
   const factures = await Promise.all(
-    factureKeys.map(async (k) => {
+    factureKeys.map(async (k: string) => {
       const data = await redis.get(k);
       return data ? JSON.parse(data) : null;
     })
   );
 
   const mouvements = await Promise.all(
-    mouvementKeys.map(async (k) => {
+    mouvementKeys.map(async (k: string) => {
       const data = await redis.get(k);
       return data ? JSON.parse(data) : null;
     })
   );
 
   const rapprochements = await Promise.all(
-    rapprochementKeys.map(async (k) => {
+    rapprochementKeys.map(async (k: string) => {
       const data = await redis.get(k);
       return data ? JSON.parse(data) : null;
     })

@@ -1,16 +1,8 @@
-import Redis from 'ioredis';
 import { v4 as uuidv4 } from 'uuid';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-const redis = new Redis({
-  host: process.env.REDIS_HOST || '127.0.0.1',
-  port: Number(process.env.REDIS_PORT) || 6379,
-});
+import redis from './services/redis.service';
 
 // ─── 20 MOUVEMENTS ───
 const mouvements = [
@@ -487,105 +479,141 @@ function generateFacturePDF(facture: FactureDef, outputPath: string): Promise<vo
 }
 
 // ─── MAIN SEED ───
-async function seed() {
-  console.log('--- Seeding mouvements ---');
+export async function seed() {
+  const ALL_TYPES = ['mouvement', 'facture', 'rapprochement', 'devis', 'bon_commande', 'bon_livraison', 'bon_reception', 'email'];
 
-  // Clear existing data
-  const existingMouvIds = await redis.smembers('mouvement:ids');
-  const existingFactIds = await redis.smembers('facture:ids');
-  const existingRappIds = await redis.smembers('rapprochement:ids');
-
-  if (existingMouvIds.length || existingFactIds.length || existingRappIds.length) {
-    const pipeline = redis.pipeline();
-    for (const id of existingMouvIds) { pipeline.del(`mouvement:${id}`); }
-    for (const id of existingFactIds) { pipeline.del(`facture:${id}`); pipeline.del(`facture:${id}:pdf`); }
-    for (const id of existingRappIds) { pipeline.del(`rapprochement:${id}`); }
-    pipeline.del('mouvement:ids', 'facture:ids', 'rapprochement:ids');
-    await pipeline.exec();
-    console.log(`Cleared ${existingMouvIds.length} mouvements, ${existingFactIds.length} factures, ${existingRappIds.length} rapprochements`);
+  console.log('--- Clearing existing data ---');
+  for (const t of ALL_TYPES) {
+    const ids = await redis.smembers(`${t}:ids`);
+    if (ids.length) {
+      const p = redis.pipeline();
+      for (const id of ids) { p.del(`${t}:${id}`); p.del(`${t}:${id}:pdf`); }
+      p.del(`${t}:ids`);
+      await p.exec();
+      console.log(`  Cleared ${ids.length} ${t}s`);
+    }
   }
 
-  // Insert mouvements
-  const pipeline = redis.pipeline();
+  // ── Insert mouvements ──
+  console.log('\n--- Seeding mouvements ---');
+  const mPipe = redis.pipeline();
   for (const m of mouvements) {
     const id = uuidv4();
-    const record = {
-      id,
-      montant: m.montant,
-      date: m.date,
-      libelle: m.libelle,
-      type_mouvement: m.type_mouvement,
-      reference: m.reference,
-      type: 'mouvement',
-      createdAt: new Date().toISOString(),
-    };
-    pipeline.set(`mouvement:${id}`, JSON.stringify(record));
-    pipeline.sadd('mouvement:ids', id);
+    mPipe.set(`mouvement:${id}`, JSON.stringify({
+      id, montant: m.montant, date: m.date, libelle: m.libelle,
+      type_mouvement: m.type_mouvement, reference: m.reference,
+      type: 'mouvement', createdAt: new Date().toISOString(),
+    }));
+    mPipe.sadd('mouvement:ids', id);
   }
-  await pipeline.exec();
-  console.log(`Inserted ${mouvements.length} mouvements`);
+  await mPipe.exec();
+  console.log(`  Inserted ${mouvements.length} mouvements`);
 
-  // Generate PDFs
-  console.log('\n--- Generating facture PDFs ---');
+  // ── Generate & store seed factures (the original 26) ──
+  console.log('\n--- Generating seed facture PDFs ---');
   const pdfDir = path.join(__dirname, '..', 'seed-factures');
   if (!fs.existsSync(pdfDir)) fs.mkdirSync(pdfDir, { recursive: true });
-
-  // Clean old PDFs
   for (const file of fs.readdirSync(pdfDir)) {
     if (file.endsWith('.pdf')) fs.unlinkSync(path.join(pdfDir, file));
   }
 
-  const facturePipeline = redis.pipeline();
+  const fPipe = redis.pipeline();
   for (const f of factures) {
     const fileName = `${f.reference}.pdf`;
     const filePath = path.join(pdfDir, fileName);
     await generateFacturePDF(f, filePath);
-
-    // Read generated PDF and store in Redis
     const pdfBuffer = fs.readFileSync(filePath);
     const id = uuidv4();
-    const record = {
-      id,
-      fileName,
-      rawText: '', // will be populated on real upload via AI extraction
-      montant: f.montant,
-      date: f.date,
-      fournisseur: f.fournisseur,
-      reference: f.reference,
-      type: 'facture',
-      createdAt: new Date().toISOString(),
-    };
-    facturePipeline.set(`facture:${id}`, JSON.stringify(record));
-    facturePipeline.set(`facture:${id}:pdf`, pdfBuffer.toString('base64'));
-    facturePipeline.sadd('facture:ids', id);
-
-    console.log(`  ${fileName} | ${f.montant.toFixed(2)} EUR | ${f.items.length} items | ${f.fournisseur}`);
+    fPipe.set(`facture:${id}`, JSON.stringify({
+      id, fileName, rawText: '', montant: f.montant, date: f.date,
+      fournisseur: f.fournisseur, reference: f.reference,
+      type: 'facture', createdAt: new Date().toISOString(),
+    }));
+    fPipe.set(`facture:${id}:pdf`, pdfBuffer.toString('base64'));
+    fPipe.sadd('facture:ids', id);
+    console.log(`  ${fileName} | ${f.montant.toFixed(2)} EUR | ${f.fournisseur}`);
   }
-  await facturePipeline.exec();
+  await fPipe.exec();
 
-  console.log(`\nGenerated and stored ${factures.length} factures in Redis + PDF files in: ${pdfDir}`);
+  // ── Generate & store full document chain (devis, BC, BL, BR, factures, emails) ──
+  console.log('\n--- Generating document chain PDFs ---');
+  const { generateAllDocuments } = await import('./seed-documents');
+  const { scenarios, emails } = await generateAllDocuments();
 
-  console.log('\n--- Scenario Summary ---');
-  console.log('Mouvements 1-5:   Exact match (1:1 with factures 1-5)');
-  console.log('Mouvement 6:      Split into 2 factures (1800 + 1200 = 3000)');
-  console.log('Mouvement 7:      Split into 2 factures (3000 + 2500 = 5500)');
-  console.log('Mouvement 8:      Split into 2 factures (1000 + 800 = 1800)');
-  console.log('Mouvement 9:      Partial - facture 2000 vs mouvement 2500 (ecart 500)');
-  console.log('Mouvement 10:     Partial - factures 5000+1500=6500 vs mouvement 7800 (ecart 1300)');
-  console.log('Mouvement 11:     Partial - facture 2800 vs mouvement 3200 (ecart 400)');
-  console.log('Mouvements 12-14: No matching facture');
-  console.log('Mouvements 15-17: Entrees (income) - skipped by reconciliation');
-  console.log('Mouvement 18:     Near match - 999.99 vs facture 1000 (within 1% tolerance)');
-  console.log('Mouvement 19:     Duplicate supplier/amount as #1');
-  console.log('Mouvement 20:     Split into 3 factures (2500+2100+1500 = 6100)');
-  console.log('Factures X01-X06: Orphans - no matching mouvement');
+  const docDir = path.join(__dirname, '..', 'seed-documents');
+  const dPipe = redis.pipeline();
 
-  redis.disconnect();
-  console.log('\nSeed complete!');
+  // Store scenario documents
+  for (const s of scenarios) {
+    const totals = s.items.reduce((sum: number, i: any) => sum + +(i.qty * i.unitHT).toFixed(2), 0);
+    const ttc = +(totals * 1.2).toFixed(2);
+
+    const docDefs = [
+      { type: 'devis', ref: `DDV-${s.id}`, subdir: 'devis', date: s.dates.devis, montant: ttc },
+      { type: 'bon_commande', ref: `BC-${s.id}`, subdir: 'bons-commande', date: s.dates.bc, montant: ttc },
+      { type: 'bon_livraison', ref: `BL-${s.id}`, subdir: 'bons-livraison', date: s.dates.bl, montant: null },
+      { type: 'bon_reception', ref: `BR-${s.id}`, subdir: 'bons-reception', date: s.dates.br, montant: null },
+      { type: 'facture', ref: `FAC-${s.id}`, subdir: 'factures', date: s.dates.facture, montant: ttc },
+    ];
+
+    for (const d of docDefs) {
+      const filePath = path.join(docDir, d.subdir, `${d.ref}.pdf`);
+      if (!fs.existsSync(filePath)) continue;
+      const pdfBuf = fs.readFileSync(filePath);
+      const id = uuidv4();
+      const record: any = {
+        id, fileName: `${d.ref}.pdf`, rawText: '', date: d.date,
+        fournisseur: s.fournisseur, reference: d.ref, scenarioId: s.id,
+        type: d.type, createdAt: new Date().toISOString(),
+      };
+      if (d.montant) record.montant = d.montant;
+      if (d.type === 'bon_commande') record.devisRef = `DDV-${s.id}`;
+      if (d.type === 'bon_livraison') record.commandeRef = `BC-${s.id}`;
+      if (d.type === 'bon_reception') { record.commandeRef = `BC-${s.id}`; record.livraisonRef = `BL-${s.id}`; }
+
+      // For scenario factures, use type 'facture' with scenarioId
+      const storeType = d.type === 'facture' ? 'facture' : d.type;
+      dPipe.set(`${storeType}:${id}`, JSON.stringify(record));
+      dPipe.set(`${storeType}:${id}:pdf`, pdfBuf.toString('base64'));
+      dPipe.sadd(`${storeType}:ids`, id);
+    }
+
+    // Add matching mouvement for the scenario
+    const mId = uuidv4();
+    dPipe.set(`mouvement:${mId}`, JSON.stringify({
+      id: mId, montant: ttc, date: s.dates.paiement,
+      libelle: `VIR ${s.fournisseur} - ${docDefs[0].ref}`,
+      type_mouvement: 'sortie', reference: `PAY-${s.id}`,
+      scenarioId: s.id, type: 'mouvement', createdAt: new Date().toISOString(),
+    }));
+    dPipe.sadd('mouvement:ids', mId);
+  }
+
+  // Store emails
+  for (const e of emails) {
+    const filePath = path.join(docDir, 'emails', `EMAIL-${e.id}.pdf`);
+    const id = uuidv4();
+    const record = {
+      id, from: e.from, to: e.to, subject: e.subject, date: e.date,
+      body: e.body, hasRelation: e.hasRelation, relationType: e.relationType,
+      scenarioId: e.scenarioId, type: 'email', createdAt: new Date().toISOString(),
+    };
+    dPipe.set(`email:${id}`, JSON.stringify(record));
+    if (fs.existsSync(filePath)) {
+      dPipe.set(`email:${id}:pdf`, fs.readFileSync(filePath).toString('base64'));
+    }
+    dPipe.sadd('email:ids', id);
+  }
+
+  await dPipe.exec();
+  console.log(`\n[Seed] Stored ${scenarios.length} full document chains + ${emails.length} emails`);
+  console.log('[Seed] Complete!');
 }
 
-seed().catch((err) => {
-  console.error('Seed error:', err);
-  redis.disconnect();
-  process.exit(1);
-});
+// Allow running standalone: npx ts-node src/seed.ts
+if (require.main === module) {
+  seed().then(() => process.exit(0)).catch((err) => {
+    console.error('Seed error:', err);
+    process.exit(1);
+  });
+}

@@ -75,7 +75,7 @@ router.get('/', async (_req: Request, res: Response) => {
   try {
     const ids = await redis.smembers('mouvement:ids');
     const mouvements = await Promise.all(
-      ids.map(async (id) => {
+      ids.map(async (id: string) => {
         const data = await redis.get(`mouvement:${id}`);
         return data ? JSON.parse(data) : null;
       })

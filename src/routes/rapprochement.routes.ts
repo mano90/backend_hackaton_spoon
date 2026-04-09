@@ -21,7 +21,7 @@ router.post('/run/:mouvementId', async (req: Request, res: Response) => {
     const factureIds = await redis.smembers('facture:ids');
     const factures: Facture[] = (
       await Promise.all(
-        factureIds.map(async (id) => {
+        factureIds.map(async (id: string) => {
           const data = await redis.get(`facture:${id}`);
           return data ? JSON.parse(data) : null;
         })
@@ -44,6 +44,7 @@ router.post('/run/:mouvementId', async (req: Request, res: Response) => {
       ecart: result.ecart,
       status: result.status,
       aiExplanation: result.explanation,
+      confirmed: false,
       createdAt: new Date().toISOString(),
     };
 
@@ -65,7 +66,7 @@ router.post('/run-all', async (_req: Request, res: Response) => {
 
     const factures: Facture[] = (
       await Promise.all(
-        factureIds.map(async (id) => {
+        factureIds.map(async (id: string) => {
           const data = await redis.get(`facture:${id}`);
           return data ? JSON.parse(data) : null;
         })
@@ -96,6 +97,7 @@ router.post('/run-all', async (_req: Request, res: Response) => {
         ecart: result.ecart,
         status: result.status,
         aiExplanation: result.explanation,
+        confirmed: false,
         createdAt: new Date().toISOString(),
       };
 
@@ -132,12 +134,37 @@ router.get('/', async (_req: Request, res: Response) => {
   try {
     const ids = await redis.smembers('rapprochement:ids');
     const rapprochements = await Promise.all(
-      ids.map(async (id) => {
+      ids.map(async (id: string) => {
         const data = await redis.get(`rapprochement:${id}`);
         return data ? JSON.parse(data) : null;
       })
     );
     res.json(rapprochements.filter(Boolean));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Confirm a rapprochement
+router.post('/confirm/:id', async (req: Request, res: Response) => {
+  try {
+    const data = await redis.get(`rapprochement:${req.params.id}`);
+    if (!data) { res.status(404).json({ error: 'Rapprochement not found' }); return; }
+    const r = JSON.parse(data);
+    r.confirmed = true;
+    await redis.set(`rapprochement:${r.id}`, JSON.stringify(r));
+    res.json({ success: true, rapprochement: r });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Reject/delete a rapprochement
+router.delete('/:id', async (req: Request, res: Response) => {
+  try {
+    await redis.del(`rapprochement:${req.params.id}`);
+    await redis.srem('rapprochement:ids', req.params.id as string);
+    res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

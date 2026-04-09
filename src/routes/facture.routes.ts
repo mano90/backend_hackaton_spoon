@@ -36,7 +36,7 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
     // Check for duplicates
     const existingIds = await redis.smembers('facture:ids');
     const existingFactures = (await Promise.all(
-      existingIds.map(async (id) => {
+      existingIds.map(async (id: string) => {
         const data = await redis.get(`facture:${id}`);
         return data ? JSON.parse(data) : null;
       })
@@ -158,7 +158,7 @@ router.get('/', async (_req: Request, res: Response) => {
   try {
     const ids = await redis.smembers('facture:ids');
     const factures = await Promise.all(
-      ids.map(async (id) => {
+      ids.map(async (id: string) => {
         const data = await redis.get(`facture:${id}`);
         return data ? JSON.parse(data) : null;
       })
