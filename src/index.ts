@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
-import factureRoutes from "./routes/facture.routes";
 import mouvementRoutes from "./routes/mouvement.routes";
 import rapprochementRoutes from "./routes/rapprochement.routes";
 import queryRoutes from "./routes/query.routes";
@@ -19,12 +18,11 @@ app.use(cors({ origin: "http://localhost:4200", credentials: true }));
 app.use(express.json());
 
 // Routes
-app.use("/api/factures", factureRoutes);
+app.use("/api/documents", documentsRoutes);
 app.use("/api/mouvements", mouvementRoutes);
 app.use("/api/rapprochement", rapprochementRoutes);
 app.use("/api/query", queryRoutes);
 app.use("/api/stats", statsRoutes);
-app.use("/api/documents", documentsRoutes);
 app.use("/api/timeline", timelineRoutes);
 
 // Health check

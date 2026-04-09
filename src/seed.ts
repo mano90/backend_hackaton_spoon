@@ -480,7 +480,7 @@ function generateFacturePDF(facture: FactureDef, outputPath: string): Promise<vo
 
 // ─── MAIN SEED ───
 export async function seed() {
-  const ALL_TYPES = ['mouvement', 'facture', 'rapprochement', 'document'];
+  const ALL_TYPES = ['mouvement', 'rapprochement', 'document'];
 
   console.log('--- Clearing existing data ---');
   for (const t of ALL_TYPES) {
@@ -524,13 +524,13 @@ export async function seed() {
     await generateFacturePDF(f, filePath);
     const pdfBuffer = fs.readFileSync(filePath);
     const id = uuidv4();
-    fPipe.set(`facture:${id}`, JSON.stringify({
+    fPipe.set(`document:${id}`, JSON.stringify({
       id, fileName, rawText: '', montant: f.montant, date: f.date,
       fournisseur: f.fournisseur, reference: f.reference,
-      type: 'facture', createdAt: new Date().toISOString(),
+      docType: 'facture', type: 'facture', createdAt: new Date().toISOString(),
     }));
-    fPipe.set(`facture:${id}:pdf`, pdfBuffer.toString('base64'));
-    fPipe.sadd('facture:ids', id);
+    fPipe.set(`document:${id}:pdf`, pdfBuffer.toString('base64'));
+    fPipe.sadd('document:ids', id);
     console.log(`  ${fileName} | ${f.montant.toFixed(2)} EUR | ${f.fournisseur}`);
   }
   await fPipe.exec();
@@ -571,16 +571,10 @@ export async function seed() {
       if (d.type === 'bon_livraison') record.commandeRef = `BC-${s.id}`;
       if (d.type === 'bon_reception') { record.commandeRef = `BC-${s.id}`; record.livraisonRef = `BL-${s.id}`; }
 
-      // Scenario factures go to facture collection, rest to document collection
-      if (d.type === 'facture') {
-        dPipe.set(`facture:${id}`, JSON.stringify(record));
-        dPipe.set(`facture:${id}:pdf`, pdfBuf.toString('base64'));
-        dPipe.sadd('facture:ids', id);
-      } else {
-        dPipe.set(`document:${id}`, JSON.stringify(record));
-        dPipe.set(`document:${id}:pdf`, pdfBuf.toString('base64'));
-        dPipe.sadd('document:ids', id);
-      }
+      // All documents go to the same collection
+      dPipe.set(`document:${id}`, JSON.stringify(record));
+      dPipe.set(`document:${id}:pdf`, pdfBuf.toString('base64'));
+      dPipe.sadd('document:ids', id);
     }
 
     // Add matching mouvement for the scenario
