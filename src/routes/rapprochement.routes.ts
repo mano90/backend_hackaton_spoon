@@ -17,13 +17,15 @@ router.post('/run/:mouvementId', async (req: Request, res: Response) => {
 
     const mouvement: MouvementBancaire = JSON.parse(mouvementData);
 
-    // Get all factures
-    const factureIds = await redis.smembers('facture:ids');
+    // Get all factures from document collection
+    const docIds = await redis.smembers('document:ids');
     const factures: Facture[] = (
       await Promise.all(
-        factureIds.map(async (id: string) => {
-          const data = await redis.get(`facture:${id}`);
-          return data ? JSON.parse(data) : null;
+        docIds.map(async (id: string) => {
+          const data = await redis.get(`document:${id}`);
+          if (!data) return null;
+          const d = JSON.parse(data);
+          return (d.docType === 'facture' || d.type === 'facture') ? d : null;
         })
       )
     ).filter(Boolean);
@@ -62,13 +64,15 @@ router.post('/run/:mouvementId', async (req: Request, res: Response) => {
 router.post('/run-all', async (_req: Request, res: Response) => {
   try {
     const mouvementIds = await redis.smembers('mouvement:ids');
-    const factureIds = await redis.smembers('facture:ids');
+    const allDocIds = await redis.smembers('document:ids');
 
     const factures: Facture[] = (
       await Promise.all(
-        factureIds.map(async (id: string) => {
-          const data = await redis.get(`facture:${id}`);
-          return data ? JSON.parse(data) : null;
+        allDocIds.map(async (id: string) => {
+          const data = await redis.get(`document:${id}`);
+          if (!data) return null;
+          const d = JSON.parse(data);
+          return (d.docType === 'facture' || d.type === 'facture') ? d : null;
         })
       )
     ).filter(Boolean);

@@ -5,21 +5,21 @@ const router = Router();
 
 router.get('/', async (_req: Request, res: Response) => {
   try {
-    const factureCount = await redis.scard('facture:ids');
-    const mouvementCount = await redis.scard('mouvement:ids');
-    const rapprochementCount = await redis.scard('rapprochement:ids');
+    // All documents
+    const docIds = await redis.smembers('document:ids');
+    const docs = (await Promise.all(
+      docIds.map(async (id: string) => {
+        const data = await redis.get(`document:${id}`);
+        return data ? JSON.parse(data) : null;
+      })
+    )).filter(Boolean);
 
-    // Calculate totals
-    const factureIds = await redis.smembers('facture:ids');
-    let totalFactures = 0;
-    for (const id of factureIds) {
-      const data = await redis.get(`facture:${id}`);
-      if (data) totalFactures += JSON.parse(data).montant || 0;
-    }
+    const factures = docs.filter((d: any) => d.docType === 'facture' || d.type === 'facture');
+    const totalFactures = factures.reduce((s: number, f: any) => s + (f.montant || 0), 0);
 
+    // Mouvements
     const mouvementIds = await redis.smembers('mouvement:ids');
-    let totalEntrees = 0;
-    let totalSorties = 0;
+    let totalEntrees = 0, totalSorties = 0;
     for (const id of mouvementIds) {
       const data = await redis.get(`mouvement:${id}`);
       if (data) {
@@ -29,10 +29,10 @@ router.get('/', async (_req: Request, res: Response) => {
       }
     }
 
-    // Rapprochement stats
-    const rapprochementIds = await redis.smembers('rapprochement:ids');
+    // Rapprochements
+    const rappIds = await redis.smembers('rapprochement:ids');
     let exact = 0, partial = 0, noMatch = 0;
-    for (const id of rapprochementIds) {
+    for (const id of rappIds) {
       const data = await redis.get(`rapprochement:${id}`);
       if (data) {
         const r = JSON.parse(data);
@@ -43,9 +43,10 @@ router.get('/', async (_req: Request, res: Response) => {
     }
 
     res.json({
-      factures: { count: factureCount, total: totalFactures },
-      mouvements: { count: mouvementCount, totalEntrees, totalSorties },
-      rapprochements: { count: rapprochementCount, exact, partial, noMatch },
+      factures: { count: factures.length, total: totalFactures },
+      documents: { count: docs.length },
+      mouvements: { count: mouvementIds.length, totalEntrees, totalSorties },
+      rapprochements: { count: rappIds.length, exact, partial, noMatch },
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
