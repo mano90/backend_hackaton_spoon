@@ -480,7 +480,7 @@ function generateFacturePDF(facture: FactureDef, outputPath: string): Promise<vo
 
 // ─── MAIN SEED ───
 export async function seed() {
-  const ALL_TYPES = ['mouvement', 'facture', 'rapprochement', 'devis', 'bon_commande', 'bon_livraison', 'bon_reception', 'email'];
+  const ALL_TYPES = ['mouvement', 'facture', 'rapprochement', 'document'];
 
   console.log('--- Clearing existing data ---');
   for (const t of ALL_TYPES) {
@@ -564,18 +564,23 @@ export async function seed() {
       const record: any = {
         id, fileName: `${d.ref}.pdf`, rawText: '', date: d.date,
         fournisseur: s.fournisseur, reference: d.ref, scenarioId: s.id,
-        type: d.type, createdAt: new Date().toISOString(),
+        docType: d.type, type: d.type, createdAt: new Date().toISOString(),
       };
       if (d.montant) record.montant = d.montant;
       if (d.type === 'bon_commande') record.devisRef = `DDV-${s.id}`;
       if (d.type === 'bon_livraison') record.commandeRef = `BC-${s.id}`;
       if (d.type === 'bon_reception') { record.commandeRef = `BC-${s.id}`; record.livraisonRef = `BL-${s.id}`; }
 
-      // For scenario factures, use type 'facture' with scenarioId
-      const storeType = d.type === 'facture' ? 'facture' : d.type;
-      dPipe.set(`${storeType}:${id}`, JSON.stringify(record));
-      dPipe.set(`${storeType}:${id}:pdf`, pdfBuf.toString('base64'));
-      dPipe.sadd(`${storeType}:ids`, id);
+      // Scenario factures go to facture collection, rest to document collection
+      if (d.type === 'facture') {
+        dPipe.set(`facture:${id}`, JSON.stringify(record));
+        dPipe.set(`facture:${id}:pdf`, pdfBuf.toString('base64'));
+        dPipe.sadd('facture:ids', id);
+      } else {
+        dPipe.set(`document:${id}`, JSON.stringify(record));
+        dPipe.set(`document:${id}:pdf`, pdfBuf.toString('base64'));
+        dPipe.sadd('document:ids', id);
+      }
     }
 
     // Add matching mouvement for the scenario
@@ -589,20 +594,21 @@ export async function seed() {
     dPipe.sadd('mouvement:ids', mId);
   }
 
-  // Store emails
+  // Store emails as documents
   for (const e of emails) {
     const filePath = path.join(docDir, 'emails', `EMAIL-${e.id}.pdf`);
     const id = uuidv4();
     const record = {
       id, from: e.from, to: e.to, subject: e.subject, date: e.date,
       body: e.body, hasRelation: e.hasRelation, relationType: e.relationType,
-      scenarioId: e.scenarioId, type: 'email', createdAt: new Date().toISOString(),
+      scenarioId: e.scenarioId, docType: 'email', type: 'email',
+      createdAt: new Date().toISOString(),
     };
-    dPipe.set(`email:${id}`, JSON.stringify(record));
+    dPipe.set(`document:${id}`, JSON.stringify(record));
     if (fs.existsSync(filePath)) {
-      dPipe.set(`email:${id}:pdf`, fs.readFileSync(filePath).toString('base64'));
+      dPipe.set(`document:${id}:pdf`, fs.readFileSync(filePath).toString('base64'));
     }
-    dPipe.sadd('email:ids', id);
+    dPipe.sadd('document:ids', id);
   }
 
   await dPipe.exec();

@@ -3,7 +3,7 @@ import redis from '../services/redis.service';
 
 const router = Router();
 
-const ALL_TYPES = ['devis', 'bon_commande', 'bon_livraison', 'bon_reception', 'facture', 'mouvement', 'email'];
+const ALL_TYPES = ['document', 'facture', 'mouvement'];
 
 // Get full timeline (all documents sorted by date)
 router.get('/', async (_req: Request, res: Response) => {

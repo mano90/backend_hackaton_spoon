@@ -18,6 +18,7 @@ export async function queryData(userQuery: string): Promise<{ answer: string; so
   const factureKeys = (await redis.keys('facture:*')).filter((k: string) => !k.includes(':pdf') && !k.includes(':pending') && k !== 'facture:ids');
   const mouvementKeys = (await redis.keys('mouvement:*')).filter((k: string) => k !== 'mouvement:ids');
   const rapprochementKeys = (await redis.keys('rapprochement:*')).filter((k: string) => k !== 'rapprochement:ids');
+  const documentKeys = (await redis.keys('document:*')).filter((k: string) => !k.includes(':pdf') && k !== 'document:ids');
 
   const factures = await Promise.all(
     factureKeys.map(async (k: string) => {
@@ -40,6 +41,13 @@ export async function queryData(userQuery: string): Promise<{ answer: string; so
     })
   );
 
+  const documents = await Promise.all(
+    documentKeys.map(async (k: string) => {
+      const data = await redis.get(k);
+      return data ? JSON.parse(data) : null;
+    })
+  );
+
   const context = `
 DONNÉES DISPONIBLES:
 
@@ -53,6 +61,12 @@ MOUVEMENTS BANCAIRES (${mouvements.filter(Boolean).length}):
 ${mouvements
   .filter(Boolean)
   .map((m: any) => `- ID: ${m.id} | Montant: ${m.montant} | Date: ${m.date} | Libellé: ${m.libelle} | Type: ${m.type_mouvement}`)
+  .join('\n')}
+
+DOCUMENTS (${documents.filter(Boolean).length}):
+${documents
+  .filter(Boolean)
+  .map((d: any) => `- ID: ${d.id} | Type: ${d.docType || d.type} | Date: ${d.date} | Fournisseur: ${d.fournisseur || d.from || ''} | Ref: ${d.reference || d.subject || ''} | Scenario: ${d.scenarioId || 'aucun'}`)
   .join('\n')}
 
 RAPPROCHEMENTS (${rapprochements.filter(Boolean).length}):
