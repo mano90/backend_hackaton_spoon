@@ -14,10 +14,10 @@ Réponds au format JSON:
 Réponds UNIQUEMENT avec le JSON.`;
 
 export async function queryData(userQuery: string): Promise<{ answer: string; sources: string[] }> {
-  // Gather all data from Redis
-  const factureKeys = await redis.keys('facture:*');
-  const mouvementKeys = await redis.keys('mouvement:*');
-  const rapprochementKeys = await redis.keys('rapprochement:*');
+  // Gather all data from Redis (exclude :pdf, :pending, and :ids keys)
+  const factureKeys = (await redis.keys('facture:*')).filter(k => !k.includes(':pdf') && !k.includes(':pending') && k !== 'facture:ids');
+  const mouvementKeys = (await redis.keys('mouvement:*')).filter(k => k !== 'mouvement:ids');
+  const rapprochementKeys = (await redis.keys('rapprochement:*')).filter(k => k !== 'rapprochement:ids');
 
   const factures = await Promise.all(
     factureKeys.map(async (k) => {

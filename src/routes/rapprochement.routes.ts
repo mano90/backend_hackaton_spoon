@@ -110,6 +110,23 @@ router.post('/run-all', async (_req: Request, res: Response) => {
   }
 });
 
+// Get sortie mouvement IDs (for progress tracking)
+router.get('/sortie-ids', async (_req: Request, res: Response) => {
+  try {
+    const mouvementIds = await redis.smembers('mouvement:ids');
+    const sortieIds: string[] = [];
+    for (const mid of mouvementIds) {
+      const mData = await redis.get(`mouvement:${mid}`);
+      if (!mData) continue;
+      const m = JSON.parse(mData);
+      if (m.type_mouvement === 'sortie') sortieIds.push(m.id);
+    }
+    res.json({ ids: sortieIds, count: sortieIds.length });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Get all rapprochements
 router.get('/', async (_req: Request, res: Response) => {
   try {

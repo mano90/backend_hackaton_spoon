@@ -1,39 +1,60 @@
 import { Router, Request, Response } from 'express';
-import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import redis from '../services/redis.service';
-import { extractTextFromPDF } from '../services/pdf.service';
-import { extractMouvementData } from '../agents/extractor.agent';
 import { MouvementBancaire } from '../types';
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
-// Upload and process a bank statement PDF
-router.post('/upload', upload.single('file'), async (req: Request, res: Response) => {
+// Create a mouvement (JSON body)
+router.post('/', async (req: Request, res: Response) => {
   try {
-    if (!req.file) {
-      res.status(400).json({ error: 'No file uploaded' });
+    const { montant, date, libelle, type_mouvement, reference } = req.body;
+
+    if (montant == null || !date || !libelle || !type_mouvement) {
+      res.status(400).json({ error: 'Missing required fields: montant, date, libelle, type_mouvement' });
       return;
     }
 
-    const rawText = await extractTextFromPDF(req.file.buffer);
-    const extractedList = await extractMouvementData(rawText);
+    const mouvement: MouvementBancaire = {
+      id: uuidv4(),
+      montant,
+      date,
+      libelle,
+      type_mouvement,
+      reference: reference || '',
+      type: 'mouvement',
+      createdAt: new Date().toISOString(),
+    };
 
-    const mouvements: MouvementBancaire[] = (Array.isArray(extractedList) ? extractedList : [extractedList]).map(
-      (m: any) => ({
-        id: uuidv4(),
-        fileName: req.file!.originalname,
-        rawText,
-        montant: m.montant || 0,
-        date: m.date || '',
-        libelle: m.libelle || '',
-        type_mouvement: m.type_mouvement || 'sortie',
-        reference: m.reference || '',
-        type: 'mouvement' as const,
-        createdAt: new Date().toISOString(),
-      })
-    );
+    await redis.set(`mouvement:${mouvement.id}`, JSON.stringify(mouvement));
+    await redis.sadd('mouvement:ids', mouvement.id);
+
+    res.json({ success: true, mouvement });
+  } catch (err: any) {
+    console.error('Mouvement creation error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Bulk create mouvements (JSON array)
+router.post('/bulk', async (req: Request, res: Response) => {
+  try {
+    const items = req.body;
+    if (!Array.isArray(items) || items.length === 0) {
+      res.status(400).json({ error: 'Body must be a non-empty array of mouvements' });
+      return;
+    }
+
+    const mouvements: MouvementBancaire[] = items.map((m: any) => ({
+      id: uuidv4(),
+      montant: m.montant || 0,
+      date: m.date || '',
+      libelle: m.libelle || '',
+      type_mouvement: m.type_mouvement || 'sortie',
+      reference: m.reference || '',
+      type: 'mouvement' as const,
+      createdAt: new Date().toISOString(),
+    }));
 
     const pipeline = redis.pipeline();
     for (const mouvement of mouvements) {
@@ -44,7 +65,7 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
 
     res.json({ success: true, count: mouvements.length, mouvements });
   } catch (err: any) {
-    console.error('Mouvement upload error:', err);
+    console.error('Mouvement bulk creation error:', err);
     res.status(500).json({ error: err.message });
   }
 });

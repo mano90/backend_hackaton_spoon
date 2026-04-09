@@ -12,8 +12,6 @@ export interface Facture {
 
 export interface MouvementBancaire {
   id: string;
-  fileName: string;
-  rawText: string;
   montant: number;
   date: string;
   libelle: string;
