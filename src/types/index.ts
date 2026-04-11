@@ -106,11 +106,52 @@ export interface Rapprochement {
 
 export interface AIQueryRequest {
   query: string;
+  sessionId?: string;
+}
+
+export type AIQuerySourceKind =
+  | 'document'
+  | 'mouvement'
+  | 'rapprochement'
+  | 'timeline_global'
+  | 'timeline_scenario'
+  | 'unknown';
+
+export interface AIQuerySourceRef {
+  id: string;
+  kind: AIQuerySourceKind;
+  label: string;
+  hasPdf?: boolean;
+  scenarioId?: string;
+}
+
+export interface AIQueryTimelineMeta {
+  scope: 'global' | 'scenario';
+  scenarioId?: string;
+  /** Libellé métier (ex. fournisseur), pas l’id technique S01 */
+  purchaseLabel?: string;
 }
 
 export interface AIQueryResponse {
   answer: string;
-  sources: string[];
+  sources: AIQuerySourceRef[];
+  sessionId: string;
+  timelineEvents?: Record<string, unknown>[];
+  timelineMeta?: AIQueryTimelineMeta;
+}
+
+export interface AIQueryHistoryResponse {
+  sessionId: string;
+  turns: AIQueryHistoryTurn[];
+}
+
+export interface AIQueryHistoryTurn {
+  question: string;
+  answer: string;
+  sources: AIQuerySourceRef[];
+  at: string;
+  timelineEvents?: Record<string, unknown>[];
+  timelineMeta?: AIQueryTimelineMeta;
 }
 
 export type DocumentType = 'devis' | 'bon_commande' | 'bon_livraison' | 'bon_reception' | 'facture' | 'mouvement' | 'email';

@@ -1,9 +1,70 @@
 import { Router, Request, Response } from 'express';
+import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import redis from '../services/redis.service';
 import { MouvementBancaire } from '../types';
+import { parseMouvementsCsv } from '../services/csv-mouvements.service';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+
+/**
+ * Import CSV (relevé / export) : détection ; ou , colonnes date, montant, libellé…
+ * Doit être déclaré avant GET /:id
+ */
+router.post('/import-csv', upload.single('file'), async (req: Request, res: Response) => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: 'Fichier manquant (champ file, CSV UTF-8)' });
+      return;
+    }
+    const name = (req.file.originalname || '').toLowerCase();
+    if (!name.endsWith('.csv') && !name.endsWith('.txt')) {
+      res.status(400).json({ error: 'Extension attendue : .csv ou .txt' });
+      return;
+    }
+
+    const { rows, errors, headers } = parseMouvementsCsv(req.file.buffer);
+    if (!rows.length) {
+      res.status(400).json({
+        error: 'Aucun mouvement valide',
+        parseErrors: errors,
+        headers,
+      });
+      return;
+    }
+
+    const mouvements: MouvementBancaire[] = rows.map((r) => ({
+      id: uuidv4(),
+      montant: r.montant,
+      date: r.date,
+      libelle: r.libelle,
+      type_mouvement: r.type_mouvement,
+      reference: r.reference,
+      type: 'mouvement',
+      createdAt: new Date().toISOString(),
+    }));
+
+    const pipeline = redis.pipeline();
+    for (const m of mouvements) {
+      pipeline.set(`mouvement:${m.id}`, JSON.stringify(m));
+      pipeline.sadd('mouvement:ids', m.id);
+    }
+    await pipeline.exec();
+
+    res.json({
+      success: true,
+      count: mouvements.length,
+      mouvements,
+      warnings: errors.length ? errors : undefined,
+      headersDetected: headers,
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('CSV import error:', err);
+    res.status(500).json({ error: message });
+  }
+});
 
 // Create a mouvement (JSON body)
 router.post('/', async (req: Request, res: Response) => {
