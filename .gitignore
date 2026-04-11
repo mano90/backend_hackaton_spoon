@@ -3,3 +3,5 @@ dist
 .env
 uploads/*
 !uploads/.gitkeep
+
+# Ne pas ajouter *.pdf ici : les PDF de seed-documents/ et seed-factures/ sont versionnés.
