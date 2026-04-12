@@ -9,6 +9,8 @@ export interface Facture {
   scenarioId?: string;
   type: 'facture';
   createdAt: string;
+  /** Empreinte SHA-256 du fichier PDF (détection doublon bit-à-bit). */
+  contentSha256?: string;
 }
 
 export interface MouvementBancaire {

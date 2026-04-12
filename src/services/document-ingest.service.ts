@@ -3,7 +3,8 @@ import redis from './redis.service';
 import { extractTextFromPDF } from './pdf.service';
 import { extractFactureData } from '../agents/extractor.agent';
 import { classifyDocument, type ClassificationResult } from '../agents/classifier.agent';
-import { checkFactureSimilarity } from '../agents/similarity.agent';
+import { resolveFactureDuplicate } from '../agents/similarity.agent';
+import { persistDocumentHashFromBuffer, sha256Buffer } from './document-hash.service';
 
 export const VALID_DOC_TYPES = ['devis', 'bon_commande', 'bon_livraison', 'bon_reception', 'facture', 'email'] as const;
 export const CONFIDENCE_THRESHOLD = 75;
@@ -29,6 +30,9 @@ export type IngestPendingDuplicate = {
     confidence: number;
     reason: string;
     existingDocument: Record<string, unknown> | null;
+    matchLayer?: string;
+    matchType?: string;
+    contentSha256?: string;
   };
   pdfBase64: string;
 };
@@ -87,6 +91,8 @@ export async function ingestOnePdf(
     }
 
     if (docType === 'facture') {
+      doc.contentSha256 = sha256Buffer(buffer);
+
       const existingIds = await redis.smembers('document:ids');
       const existingFactures = (
         await Promise.all(
@@ -99,57 +105,63 @@ export async function ingestOnePdf(
         )
       ).filter(Boolean) as Record<string, unknown>[];
 
-      if (existingFactures.length > 0) {
-        const similarity = await checkFactureSimilarity(
-          {
-            montant: (doc.montant as number) || 0,
-            date: doc.date as string,
-            fournisseur: doc.fournisseur as string,
-            reference: doc.reference as string,
-            rawText: doc.rawText as string,
-            fileSize: buffer.length,
-          },
-          existingFactures.map((f: Record<string, unknown>) => ({
-            id: f.id as string,
-            montant: (f.montant as number) || 0,
-            date: f.date as string,
-            fournisseur: f.fournisseur as string,
-            reference: f.reference as string,
-            fileName: f.fileName as string,
-          }))
-        );
+      const similarity = await resolveFactureDuplicate(
+        buffer,
+        {
+          id: doc.id as string,
+          montant: (doc.montant as number) || 0,
+          date: doc.date as string,
+          fournisseur: doc.fournisseur as string,
+          reference: doc.reference as string,
+          rawText: doc.rawText as string,
+          fileName: originalName,
+        },
+        existingFactures.map((f: Record<string, unknown>) => ({
+          id: f.id as string,
+          montant: (f.montant as number) || 0,
+          date: f.date as string,
+          fournisseur: f.fournisseur as string,
+          reference: f.reference as string,
+          fileName: f.fileName as string,
+        }))
+      );
 
-        if (similarity.hasDuplicate && similarity.confidence >= 70) {
-          const pendingKey = `document:pending:${doc.id}`;
-          await redis.set(pendingKey, JSON.stringify(doc), 'EX', 600);
-          await redis.set(`${pendingKey}:pdf`, buffer.toString('base64'), 'EX', 600);
+      if (similarity.hasDuplicate && similarity.confidence >= 70) {
+        const pendingKey = `document:pending:${doc.id}`;
+        await redis.set(pendingKey, JSON.stringify(doc), 'EX', 600);
+        await redis.set(`${pendingKey}:pdf`, buffer.toString('base64'), 'EX', 600);
 
-          return {
-            kind: 'pending_duplicate',
-            pendingDocument: doc,
-            similarity: {
-              duplicateId: similarity.duplicateId!,
-              confidence: similarity.confidence,
-              reason: similarity.reason,
-              existingDocument:
-                (existingFactures.find((f: Record<string, unknown>) => f.id === similarity.duplicateId) as
-                  | Record<string, unknown>
-                  | null) ?? null,
-            },
-            pdfBase64: buffer.toString('base64'),
-          };
+        let existingDocument: Record<string, unknown> | null = null;
+        if (similarity.duplicateId) {
+          const raw = await redis.get(`document:${similarity.duplicateId}`);
+          existingDocument = raw ? (JSON.parse(raw) as Record<string, unknown>) : null;
         }
+
+        return {
+          kind: 'pending_duplicate',
+          pendingDocument: doc,
+          similarity: {
+            duplicateId: similarity.duplicateId!,
+            confidence: similarity.confidence,
+            reason: similarity.reason,
+            existingDocument,
+            matchLayer: similarity.matchLayer,
+            matchType: similarity.matchType,
+            contentSha256: similarity.contentSha256,
+          },
+          pdfBase64: buffer.toString('base64'),
+        };
       }
     }
 
+    if (body?.assignDefaultScenarioId !== false) {
+      doc.scenarioId = uuidv4();
+    }
+
+    await persistDocumentHashFromBuffer(doc, buffer);
     await redis.set(`document:${doc.id}`, JSON.stringify(doc));
     await redis.set(`document:${doc.id}:pdf`, buffer.toString('base64'));
     await redis.sadd('document:ids', doc.id as string);
-
-    if (body?.assignDefaultScenarioId !== false) {
-      doc.scenarioId = uuidv4();
-      await redis.set(`document:${doc.id}`, JSON.stringify(doc));
-    }
 
     return { kind: 'saved', document: doc, classification };
   } catch (e: unknown) {

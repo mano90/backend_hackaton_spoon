@@ -4,7 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 import redis from '../services/redis.service';
 import { extractTextFromPDF } from '../services/pdf.service';
 import { extractFactureData } from '../agents/extractor.agent';
-import { checkFactureSimilarity } from '../agents/similarity.agent';
+import { resolveFactureDuplicate } from '../agents/similarity.agent';
+import { persistDocumentHashFromBase64, persistDocumentHashFromBuffer, sha256Buffer, unregisterDocumentHash } from '../services/document-hash.service';
 import { Facture } from '../types';
 
 const router = Router();
@@ -31,6 +32,7 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
       reference: extracted.reference || '',
       type: 'facture',
       createdAt: new Date().toISOString(),
+      contentSha256: sha256Buffer(req.file.buffer),
     };
 
     // Check for duplicates
@@ -42,8 +44,17 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
       })
     )).filter(Boolean);
 
-    const similarity = await checkFactureSimilarity(
-      { montant: facture.montant, date: facture.date, fournisseur: facture.fournisseur, reference: facture.reference, rawText: facture.rawText, fileSize: req.file.size },
+    const similarity = await resolveFactureDuplicate(
+      req.file.buffer,
+      {
+        id: facture.id,
+        montant: facture.montant,
+        date: facture.date,
+        fournisseur: facture.fournisseur,
+        reference: facture.reference,
+        rawText: facture.rawText,
+        fileName: facture.fileName,
+      },
       existingFactures.map((f: any) => ({ id: f.id, montant: f.montant, date: f.date, fournisseur: f.fournisseur, reference: f.reference, fileName: f.fileName }))
     );
 
@@ -53,6 +64,14 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
       await redis.set(pendingKey, JSON.stringify(facture), 'EX', 600);
       await redis.set(`${pendingKey}:pdf`, req.file.buffer.toString('base64'), 'EX', 600);
 
+      let existingFacture: any = null;
+      if (similarity.duplicateId) {
+        const raw =
+          (await redis.get(`facture:${similarity.duplicateId}`)) ??
+          (await redis.get(`document:${similarity.duplicateId}`));
+        existingFacture = raw ? JSON.parse(raw) : null;
+      }
+
       res.json({
         success: false,
         needsConfirmation: true,
@@ -61,13 +80,17 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
           duplicateId: similarity.duplicateId,
           confidence: similarity.confidence,
           reason: similarity.reason,
-          existingFacture: existingFactures.find((f: any) => f.id === similarity.duplicateId) || null,
+          existingFacture,
+          matchLayer: similarity.matchLayer,
+          matchType: similarity.matchType,
+          contentSha256: similarity.contentSha256,
         },
       });
       return;
     }
 
     // No duplicate: save directly
+    await persistDocumentHashFromBuffer(facture as unknown as Record<string, unknown>, req.file.buffer);
     await redis.set(`facture:${facture.id}`, JSON.stringify(facture));
     await redis.set(`facture:${facture.id}:pdf`, req.file.buffer.toString('base64'));
     await redis.sadd('facture:ids', facture.id);
@@ -93,7 +116,11 @@ router.post('/confirm/:pendingId', async (req: Request, res: Response) => {
       return;
     }
 
-    const facture = JSON.parse(data);
+    const facture = JSON.parse(data) as Facture;
+
+    if (pdfData) {
+      await persistDocumentHashFromBase64(facture as unknown as Record<string, unknown>, pdfData);
+    }
 
     await redis.set(`facture:${facture.id}`, JSON.stringify(facture));
     if (pdfData) await redis.set(`facture:${facture.id}:pdf`, pdfData);
@@ -122,13 +149,22 @@ router.post('/replace/:pendingId/:existingId', async (req: Request, res: Respons
       return;
     }
 
-    const facture = JSON.parse(data);
+    const facture = JSON.parse(data) as Facture;
+
+    const oldRaw = await redis.get(`facture:${existingId}`);
+    if (oldRaw) {
+      const oldF = JSON.parse(oldRaw) as Facture;
+      if (oldF.contentSha256) await unregisterDocumentHash(oldF.contentSha256, String(existingId));
+    }
 
     // Delete existing
     await redis.del(`facture:${existingId}`, `facture:${existingId}:pdf`);
     await redis.srem('facture:ids', existingId as string);
 
     // Save new
+    if (pdfData) {
+      await persistDocumentHashFromBase64(facture as unknown as Record<string, unknown>, pdfData);
+    }
     await redis.set(`facture:${facture.id}`, JSON.stringify(facture));
     if (pdfData) await redis.set(`facture:${facture.id}:pdf`, pdfData);
     await redis.sadd('facture:ids', facture.id);
@@ -202,6 +238,11 @@ router.get('/:id/pdf', async (req: Request, res: Response) => {
 // Delete a facture
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
+    const raw = await redis.get(`facture:${req.params.id}`);
+    if (raw) {
+      const f = JSON.parse(raw) as Facture;
+      if (f.contentSha256) await unregisterDocumentHash(f.contentSha256, String(req.params.id));
+    }
     await redis.del(`facture:${req.params.id}`, `facture:${req.params.id}:pdf`);
     await redis.srem('facture:ids', req.params.id as string);
     res.json({ success: true });

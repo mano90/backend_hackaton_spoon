@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 import redis from '../services/redis.service';
 import { ingestOnePdf, VALID_DOC_TYPES } from '../services/document-ingest.service';
 import { linkDocumentsIntoDossiers, type DossierLinkInput } from '../agents/dossier-link.agent';
+import { clusterFactureDuplicates } from '../services/facture-cluster.service';
+import { backfillMissingContentSha256, persistDocumentHashFromBase64, unregisterDocumentHash } from '../services/document-hash.service';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -163,6 +165,29 @@ router.post('/upload-batch', uploadBatch.array('files', BATCH_MAX_FILES), async 
   }
 });
 
+/** Regroupe les factures stockées en doublons potentiels (hash, règles, optionnellement LLM). */
+router.get('/factures/duplicate-groups', async (req: Request, res: Response) => {
+  try {
+    const maxLlmCalls = Math.min(500, Math.max(0, Number(req.query.maxLlmCalls) || 0));
+    const result = await clusterFactureDuplicates({ maxLlmCalls });
+    res.json(result);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: message });
+  }
+});
+
+/** Calcule les empreintes SHA-256 manquantes pour les PDF déjà stockés. */
+router.post('/factures/backfill-hashes', async (_req: Request, res: Response) => {
+  try {
+    const result = await backfillMissingContentSha256();
+    res.json(result);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: message });
+  }
+});
+
 // Confirm a pending document (with optional type override)
 router.post('/confirm/:pendingId', async (req: Request, res: Response) => {
   try {
@@ -183,6 +208,10 @@ router.post('/confirm/:pendingId', async (req: Request, res: Response) => {
 
     if (doc.scenarioId == null) {
       doc.scenarioId = uuidv4();
+    }
+
+    if (pdfData) {
+      await persistDocumentHashFromBase64(doc, pdfData);
     }
 
     await redis.set(`document:${doc.id}`, JSON.stringify(doc));
@@ -209,9 +238,18 @@ router.post('/replace/:pendingId/:existingId', async (req: Request, res: Respons
       return;
     }
 
-    const doc = JSON.parse(data);
+    const doc = JSON.parse(data) as Record<string, unknown>;
+    const oldRaw = await redis.get(`document:${existingId}`);
+    if (oldRaw) {
+      const oldDoc = JSON.parse(oldRaw) as Record<string, unknown>;
+      const oh = oldDoc.contentSha256;
+      if (typeof oh === 'string') await unregisterDocumentHash(oh, String(existingId));
+    }
     await redis.del(`document:${existingId}`, `document:${existingId}:pdf`);
     await redis.srem('document:ids', existingId as string);
+    if (pdfData) {
+      await persistDocumentHashFromBase64(doc, pdfData);
+    }
     await redis.set(`document:${doc.id}`, JSON.stringify(doc));
     if (pdfData) await redis.set(`document:${doc.id}:pdf`, pdfData);
     await redis.sadd('document:ids', doc.id);
@@ -313,6 +351,12 @@ router.get('/:id/pdf', async (req: Request, res: Response) => {
 // Delete a document
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
+    const existing = await redis.get(`document:${req.params.id}`);
+    if (existing) {
+      const oldDoc = JSON.parse(existing) as Record<string, unknown>;
+      const oh = oldDoc.contentSha256;
+      if (typeof oh === 'string') await unregisterDocumentHash(oh, String(req.params.id));
+    }
     await redis.del(`document:${req.params.id}`, `document:${req.params.id}:pdf`);
     await redis.srem('document:ids', req.params.id as string);
     res.json({ success: true });
