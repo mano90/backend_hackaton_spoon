@@ -1,0 +1,6 @@
+bookingdate,amount,description,transaction_id,type
+2026-03-01,-75.00,ATM withdrawal Paris 11,ATM-0301-01,debit
+2026-03-04,4200.00,Wire transfer incoming INVOICE-992,WIRE-992,credit
+2026-03-11,-199.99,Software subscription annual,INV-SW-11,out
+2026-03-18,-850.00,Supplier payment REF-8844,PAY-8844,debit
+2026-03-25,35.50,Cashback promotion,CASHBACK-25,credit

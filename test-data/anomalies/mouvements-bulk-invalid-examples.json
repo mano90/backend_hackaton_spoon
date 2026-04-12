@@ -1,0 +1,33 @@
+{
+  "comment": "Ne pas poster tel quel si vous attendez des mouvements propres — pour tests erreurs API / UI",
+  "examples": [
+    {
+      "montant": "not-a-number",
+      "date": "2026-01-01",
+      "libelle": "x",
+      "type_mouvement": "sortie",
+      "reference": "E1"
+    },
+    {
+      "montant": -500,
+      "date": "invalid-date",
+      "libelle": "bad date",
+      "type_mouvement": "entree",
+      "reference": "E2"
+    },
+    {
+      "montant": 0,
+      "date": "",
+      "libelle": "",
+      "type_mouvement": "sortie",
+      "reference": ""
+    },
+    {
+      "montant": null,
+      "date": "2026-06-01",
+      "libelle": "NaN montant",
+      "type_mouvement": "sortie",
+      "reference": "E4"
+    }
+  ]
+}

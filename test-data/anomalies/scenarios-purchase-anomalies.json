@@ -1,0 +1,1335 @@
+{
+  "meta": {
+    "purpose": "Jeux de scénarios avec anomalies (dates, montants, références) — tests manuels, démo IA, frise",
+    "notLoadedByApi": true
+  },
+  "scenarios": [
+    {
+      "scenarioId": "ANOM-001",
+      "fournisseur": "Fournisseur Alpha",
+      "anomalyDescription": "Bon de livraison AVANT le bon de commande (dates incohérentes)",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-03-10",
+          "reference": "DDV-ANOM-001",
+          "montant": 1200
+        },
+        {
+          "type": "bon_livraison",
+          "date": "2026-03-01",
+          "reference": "BL-ANOM-001",
+          "montant": null
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-03-15",
+          "reference": "BC-ANOM-001",
+          "montant": 1200
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-002",
+      "fournisseur": "Beta Industries",
+      "anomalyDescription": "Réception avant livraison",
+      "steps": [
+        {
+          "type": "bon_commande",
+          "date": "2026-02-20",
+          "reference": "BC-ANOM-002",
+          "montant": 500
+        },
+        {
+          "type": "bon_reception",
+          "date": "2026-02-18",
+          "reference": "BR-ANOM-002",
+          "montant": null
+        },
+        {
+          "type": "bon_livraison",
+          "date": "2026-02-25",
+          "reference": "BL-ANOM-002",
+          "montant": null
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-003",
+      "fournisseur": "Gamma SAS",
+      "anomalyDescription": "Facture avec montant différent du BC (écart)",
+      "steps": [
+        {
+          "type": "bon_commande",
+          "date": "2026-04-01",
+          "reference": "BC-ANOM-003",
+          "montant": 1000
+        },
+        {
+          "type": "facture",
+          "date": "2026-04-20",
+          "reference": "FAC-ANOM-003",
+          "montant": 1750.5
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-004",
+      "fournisseur": "Delta Log",
+      "anomalyDescription": "Paiement (mouvement) avant facture",
+      "steps": [
+        {
+          "type": "facture",
+          "date": "2026-05-10",
+          "reference": "FAC-ANOM-004",
+          "montant": 800
+        },
+        {
+          "type": "mouvement",
+          "date": "2026-05-01",
+          "reference": "VIR-DELTA",
+          "montant": 800,
+          "type_mouvement": "sortie"
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-005",
+      "fournisseur": "Epsilon",
+      "anomalyDescription": "Devis manquant, BC seul",
+      "steps": [
+        {
+          "type": "bon_commande",
+          "date": "2026-01-15",
+          "reference": "BC-ORPHELIN",
+          "montant": 300
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-006",
+      "fournisseur": "Zeta Corp",
+      "anomalyDescription": "Montants négatifs ou nuls sur documents",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-06-01",
+          "reference": "DDV-Z",
+          "montant": -100
+        },
+        {
+          "type": "facture",
+          "date": "2026-06-15",
+          "reference": "FAC-Z",
+          "montant": 0
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-007",
+      "fournisseur": "Eta",
+      "anomalyDescription": "Même référence réutilisée sur deux fournisseurs (collision)",
+      "steps": [
+        {
+          "type": "facture",
+          "date": "2026-07-01",
+          "reference": "FAC-DUP",
+          "montant": 100,
+          "fournisseur": "Eta"
+        },
+        {
+          "type": "facture",
+          "date": "2026-07-02",
+          "reference": "FAC-DUP",
+          "montant": 200,
+          "fournisseur": "AutreCo"
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-008",
+      "fournisseur": "Theta",
+      "anomalyDescription": "Date facture avant devis",
+      "steps": [
+        {
+          "type": "facture",
+          "date": "2026-01-01",
+          "reference": "FAC-EARLY",
+          "montant": 400
+        },
+        {
+          "type": "devis",
+          "date": "2026-02-01",
+          "reference": "DDV-LATE",
+          "montant": 400
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-009",
+      "fournisseur": "Iota",
+      "anomalyDescription": "scenarioId manquant sur un document de la chaîne",
+      "steps": [
+        {
+          "type": "bon_commande",
+          "date": "2026-08-10",
+          "reference": "BC-I",
+          "montant": 50,
+          "scenarioId": "S-IOTA"
+        },
+        {
+          "type": "facture",
+          "date": "2026-08-20",
+          "reference": "FAC-I",
+          "montant": 50,
+          "scenarioId": null
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-010",
+      "fournisseur": "Kappa",
+      "anomalyDescription": "Livraison et commande même jour mais BL référence commande erronée",
+      "steps": [
+        {
+          "type": "bon_commande",
+          "date": "2026-09-01",
+          "reference": "BC-KAP-99",
+          "montant": 222
+        },
+        {
+          "type": "bon_livraison",
+          "date": "2026-09-05",
+          "reference": "BL-KAP-WRONG",
+          "commandeRef": "BC-OTHER",
+          "montant": null
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-011",
+      "fournisseur": "AutoVendor 11",
+      "anomalyDescription": "Chronologie inversée sur un maillon",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-12-12",
+          "reference": "DDV-ANOM-011",
+          "montant": 1143
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-12-12",
+          "reference": "BC-ANOM-011",
+          "montant": 1010
+        },
+        {
+          "type": "facture",
+          "date": "2026-12-08",
+          "reference": "FAC-ANOM-011",
+          "montant": 2220
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-012",
+      "fournisseur": "AutoVendor 12",
+      "anomalyDescription": "Montant BC avec séparateur décimal ambigu",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-01-13",
+          "reference": "DDV-ANOM-012",
+          "montant": 1156
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-01-13",
+          "reference": "BC-ANOM-012",
+          "montant": 1020
+        },
+        {
+          "type": "facture",
+          "date": "2026-01-09",
+          "reference": "FAC-ANOM-012",
+          "montant": 2240
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-013",
+      "fournisseur": "AutoVendor 13",
+      "anomalyDescription": "Email de relance daté avant le devis",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-02-14",
+          "reference": "DDV-ANOM-013",
+          "montant": 1169
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-02-14",
+          "reference": "BC-ANOM-013",
+          "montant": 1030
+        },
+        {
+          "type": "facture",
+          "date": "2026-02-10",
+          "reference": "FAC-ANOM-013",
+          "montant": 2260
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-014",
+      "fournisseur": "AutoVendor 14",
+      "anomalyDescription": "Email de relance daté avant le devis",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-03-15",
+          "reference": "DDV-ANOM-014",
+          "montant": 1182
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-03-15",
+          "reference": "BC-ANOM-014",
+          "montant": 1040
+        },
+        {
+          "type": "facture",
+          "date": "2026-03-11",
+          "reference": "FAC-ANOM-014",
+          "montant": 2280
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-015",
+      "fournisseur": "AutoVendor 15",
+      "anomalyDescription": "Montant BC avec séparateur décimal ambigu",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-04-16",
+          "reference": "DDV-ANOM-015",
+          "montant": 1195
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-04-16",
+          "reference": "BC-ANOM-015",
+          "montant": 1050
+        },
+        {
+          "type": "facture",
+          "date": "2026-04-12",
+          "reference": "FAC-ANOM-015",
+          "montant": 2300
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-016",
+      "fournisseur": "AutoVendor 16",
+      "anomalyDescription": "Chronologie inversée sur un maillon",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-05-17",
+          "reference": "DDV-ANOM-016",
+          "montant": 1208
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-05-17",
+          "reference": "BC-ANOM-016",
+          "montant": 1060
+        },
+        {
+          "type": "facture",
+          "date": "2026-05-13",
+          "reference": "FAC-ANOM-016",
+          "montant": 2320
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-017",
+      "fournisseur": "AutoVendor 17",
+      "anomalyDescription": "Chronologie inversée sur un maillon",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-06-01",
+          "reference": "DDV-ANOM-017",
+          "montant": 1221
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-06-01",
+          "reference": "BC-ANOM-017",
+          "montant": 1070
+        },
+        {
+          "type": "facture",
+          "date": "2026-06-01",
+          "reference": "FAC-ANOM-017",
+          "montant": 2340
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-018",
+      "fournisseur": "AutoVendor 18",
+      "anomalyDescription": "Email de relance daté avant le devis",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-07-02",
+          "reference": "DDV-ANOM-018",
+          "montant": 1234
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-07-02",
+          "reference": "BC-ANOM-018",
+          "montant": 1080
+        },
+        {
+          "type": "facture",
+          "date": "2026-07-01",
+          "reference": "FAC-ANOM-018",
+          "montant": 2360
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-019",
+      "fournisseur": "AutoVendor 19",
+      "anomalyDescription": "Montant BC avec séparateur décimal ambigu",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-08-03",
+          "reference": "DDV-ANOM-019",
+          "montant": 1247
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-08-03",
+          "reference": "BC-ANOM-019",
+          "montant": 1090
+        },
+        {
+          "type": "facture",
+          "date": "2026-08-01",
+          "reference": "FAC-ANOM-019",
+          "montant": 2380
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-020",
+      "fournisseur": "AutoVendor 20",
+      "anomalyDescription": "Écart progressif entre devis et facture",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-09-04",
+          "reference": "DDV-ANOM-020",
+          "montant": 1260
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-09-04",
+          "reference": "BC-ANOM-020",
+          "montant": 1100
+        },
+        {
+          "type": "facture",
+          "date": "2026-09-01",
+          "reference": "FAC-ANOM-020",
+          "montant": 2400
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-021",
+      "fournisseur": "AutoVendor 21",
+      "anomalyDescription": "Montant BC avec séparateur décimal ambigu",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-10-05",
+          "reference": "DDV-ANOM-021",
+          "montant": 1273
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-10-05",
+          "reference": "BC-ANOM-021",
+          "montant": 1110
+        },
+        {
+          "type": "facture",
+          "date": "2026-10-01",
+          "reference": "FAC-ANOM-021",
+          "montant": 2420
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-022",
+      "fournisseur": "AutoVendor 22",
+      "anomalyDescription": "Chronologie inversée sur un maillon",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-11-06",
+          "reference": "DDV-ANOM-022",
+          "montant": 1286
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-11-06",
+          "reference": "BC-ANOM-022",
+          "montant": 1120
+        },
+        {
+          "type": "facture",
+          "date": "2026-11-02",
+          "reference": "FAC-ANOM-022",
+          "montant": 2440
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-023",
+      "fournisseur": "AutoVendor 23",
+      "anomalyDescription": "Écart progressif entre devis et facture",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-12-07",
+          "reference": "DDV-ANOM-023",
+          "montant": 1299
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-12-07",
+          "reference": "BC-ANOM-023",
+          "montant": 1130
+        },
+        {
+          "type": "facture",
+          "date": "2026-12-03",
+          "reference": "FAC-ANOM-023",
+          "montant": 2460
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-024",
+      "fournisseur": "AutoVendor 24",
+      "anomalyDescription": "Montant BC avec séparateur décimal ambigu",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-01-08",
+          "reference": "DDV-ANOM-024",
+          "montant": 1312
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-01-08",
+          "reference": "BC-ANOM-024",
+          "montant": 1140
+        },
+        {
+          "type": "facture",
+          "date": "2026-01-04",
+          "reference": "FAC-ANOM-024",
+          "montant": 2480
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-025",
+      "fournisseur": "AutoVendor 25",
+      "anomalyDescription": "Écart progressif entre devis et facture",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-02-09",
+          "reference": "DDV-ANOM-025",
+          "montant": 1325
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-02-09",
+          "reference": "BC-ANOM-025",
+          "montant": 1150
+        },
+        {
+          "type": "facture",
+          "date": "2026-02-05",
+          "reference": "FAC-ANOM-025",
+          "montant": 2500
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-026",
+      "fournisseur": "AutoVendor 26",
+      "anomalyDescription": "Email de relance daté avant le devis",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-03-10",
+          "reference": "DDV-ANOM-026",
+          "montant": 1338
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-03-10",
+          "reference": "BC-ANOM-026",
+          "montant": 1160
+        },
+        {
+          "type": "facture",
+          "date": "2026-03-06",
+          "reference": "FAC-ANOM-026",
+          "montant": 2520
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-027",
+      "fournisseur": "AutoVendor 27",
+      "anomalyDescription": "Écart progressif entre devis et facture",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-04-11",
+          "reference": "DDV-ANOM-027",
+          "montant": 1351
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-04-11",
+          "reference": "BC-ANOM-027",
+          "montant": 1170
+        },
+        {
+          "type": "facture",
+          "date": "2026-04-07",
+          "reference": "FAC-ANOM-027",
+          "montant": 2540
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-028",
+      "fournisseur": "AutoVendor 28",
+      "anomalyDescription": "Chronologie inversée sur un maillon",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-05-12",
+          "reference": "DDV-ANOM-028",
+          "montant": 1364
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-05-12",
+          "reference": "BC-ANOM-028",
+          "montant": 1180
+        },
+        {
+          "type": "facture",
+          "date": "2026-05-08",
+          "reference": "FAC-ANOM-028",
+          "montant": 2560
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-029",
+      "fournisseur": "AutoVendor 29",
+      "anomalyDescription": "Écart progressif entre devis et facture",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-06-13",
+          "reference": "DDV-ANOM-029",
+          "montant": 1377
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-06-13",
+          "reference": "BC-ANOM-029",
+          "montant": 1190
+        },
+        {
+          "type": "facture",
+          "date": "2026-06-09",
+          "reference": "FAC-ANOM-029",
+          "montant": 2580
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-030",
+      "fournisseur": "AutoVendor 30",
+      "anomalyDescription": "Écart progressif entre devis et facture",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-07-14",
+          "reference": "DDV-ANOM-030",
+          "montant": 1390
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-07-14",
+          "reference": "BC-ANOM-030",
+          "montant": 1200
+        },
+        {
+          "type": "facture",
+          "date": "2026-07-10",
+          "reference": "FAC-ANOM-030",
+          "montant": 2600
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-031",
+      "fournisseur": "AutoVendor 31",
+      "anomalyDescription": "Montant BC avec séparateur décimal ambigu",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-08-15",
+          "reference": "DDV-ANOM-031",
+          "montant": 1403
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-08-15",
+          "reference": "BC-ANOM-031",
+          "montant": 1210
+        },
+        {
+          "type": "facture",
+          "date": "2026-08-11",
+          "reference": "FAC-ANOM-031",
+          "montant": 2620
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-032",
+      "fournisseur": "AutoVendor 32",
+      "anomalyDescription": "Montant BC avec séparateur décimal ambigu",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-09-16",
+          "reference": "DDV-ANOM-032",
+          "montant": 1416
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-09-16",
+          "reference": "BC-ANOM-032",
+          "montant": 1220
+        },
+        {
+          "type": "facture",
+          "date": "2026-09-12",
+          "reference": "FAC-ANOM-032",
+          "montant": 2640
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-033",
+      "fournisseur": "AutoVendor 33",
+      "anomalyDescription": "Écart progressif entre devis et facture",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-10-17",
+          "reference": "DDV-ANOM-033",
+          "montant": 1429
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-10-17",
+          "reference": "BC-ANOM-033",
+          "montant": 1230
+        },
+        {
+          "type": "facture",
+          "date": "2026-10-13",
+          "reference": "FAC-ANOM-033",
+          "montant": 2660
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-034",
+      "fournisseur": "AutoVendor 34",
+      "anomalyDescription": "Chronologie inversée sur un maillon",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-11-01",
+          "reference": "DDV-ANOM-034",
+          "montant": 1442
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-11-01",
+          "reference": "BC-ANOM-034",
+          "montant": 1240
+        },
+        {
+          "type": "facture",
+          "date": "2026-11-01",
+          "reference": "FAC-ANOM-034",
+          "montant": 2680
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-035",
+      "fournisseur": "AutoVendor 35",
+      "anomalyDescription": "Email de relance daté avant le devis",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-12-02",
+          "reference": "DDV-ANOM-035",
+          "montant": 1455
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-12-02",
+          "reference": "BC-ANOM-035",
+          "montant": 1250
+        },
+        {
+          "type": "facture",
+          "date": "2026-12-01",
+          "reference": "FAC-ANOM-035",
+          "montant": 2700
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-036",
+      "fournisseur": "AutoVendor 36",
+      "anomalyDescription": "Montant BC avec séparateur décimal ambigu",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-01-03",
+          "reference": "DDV-ANOM-036",
+          "montant": 1468
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-01-03",
+          "reference": "BC-ANOM-036",
+          "montant": 1260
+        },
+        {
+          "type": "facture",
+          "date": "2026-01-01",
+          "reference": "FAC-ANOM-036",
+          "montant": 2720
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-037",
+      "fournisseur": "AutoVendor 37",
+      "anomalyDescription": "Chronologie inversée sur un maillon",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-02-04",
+          "reference": "DDV-ANOM-037",
+          "montant": 1481
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-02-04",
+          "reference": "BC-ANOM-037",
+          "montant": 1270
+        },
+        {
+          "type": "facture",
+          "date": "2026-02-01",
+          "reference": "FAC-ANOM-037",
+          "montant": 2740
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-038",
+      "fournisseur": "AutoVendor 38",
+      "anomalyDescription": "Email de relance daté avant le devis",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-03-05",
+          "reference": "DDV-ANOM-038",
+          "montant": 1494
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-03-05",
+          "reference": "BC-ANOM-038",
+          "montant": 1280
+        },
+        {
+          "type": "facture",
+          "date": "2026-03-01",
+          "reference": "FAC-ANOM-038",
+          "montant": 2760
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-039",
+      "fournisseur": "AutoVendor 39",
+      "anomalyDescription": "Montant BC avec séparateur décimal ambigu",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-04-06",
+          "reference": "DDV-ANOM-039",
+          "montant": 1507
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-04-06",
+          "reference": "BC-ANOM-039",
+          "montant": 1290
+        },
+        {
+          "type": "facture",
+          "date": "2026-04-02",
+          "reference": "FAC-ANOM-039",
+          "montant": 2780
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-040",
+      "fournisseur": "AutoVendor 40",
+      "anomalyDescription": "Montant BC avec séparateur décimal ambigu",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-05-07",
+          "reference": "DDV-ANOM-040",
+          "montant": 1520
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-05-07",
+          "reference": "BC-ANOM-040",
+          "montant": 1300
+        },
+        {
+          "type": "facture",
+          "date": "2026-05-03",
+          "reference": "FAC-ANOM-040",
+          "montant": 2800
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-041",
+      "fournisseur": "AutoVendor 41",
+      "anomalyDescription": "Email de relance daté avant le devis",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-06-08",
+          "reference": "DDV-ANOM-041",
+          "montant": 1533
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-06-08",
+          "reference": "BC-ANOM-041",
+          "montant": 1310
+        },
+        {
+          "type": "facture",
+          "date": "2026-06-04",
+          "reference": "FAC-ANOM-041",
+          "montant": 2820
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-042",
+      "fournisseur": "AutoVendor 42",
+      "anomalyDescription": "Email de relance daté avant le devis",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-07-09",
+          "reference": "DDV-ANOM-042",
+          "montant": 1546
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-07-09",
+          "reference": "BC-ANOM-042",
+          "montant": 1320
+        },
+        {
+          "type": "facture",
+          "date": "2026-07-05",
+          "reference": "FAC-ANOM-042",
+          "montant": 2840
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-043",
+      "fournisseur": "AutoVendor 43",
+      "anomalyDescription": "Email de relance daté avant le devis",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-08-10",
+          "reference": "DDV-ANOM-043",
+          "montant": 1559
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-08-10",
+          "reference": "BC-ANOM-043",
+          "montant": 1330
+        },
+        {
+          "type": "facture",
+          "date": "2026-08-06",
+          "reference": "FAC-ANOM-043",
+          "montant": 2860
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-044",
+      "fournisseur": "AutoVendor 44",
+      "anomalyDescription": "Chronologie inversée sur un maillon",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-09-11",
+          "reference": "DDV-ANOM-044",
+          "montant": 1572
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-09-11",
+          "reference": "BC-ANOM-044",
+          "montant": 1340
+        },
+        {
+          "type": "facture",
+          "date": "2026-09-07",
+          "reference": "FAC-ANOM-044",
+          "montant": 2880
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-045",
+      "fournisseur": "AutoVendor 45",
+      "anomalyDescription": "Chronologie inversée sur un maillon",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-10-12",
+          "reference": "DDV-ANOM-045",
+          "montant": 1585
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-10-12",
+          "reference": "BC-ANOM-045",
+          "montant": 1350
+        },
+        {
+          "type": "facture",
+          "date": "2026-10-08",
+          "reference": "FAC-ANOM-045",
+          "montant": 2900
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-046",
+      "fournisseur": "AutoVendor 46",
+      "anomalyDescription": "Écart progressif entre devis et facture",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-11-13",
+          "reference": "DDV-ANOM-046",
+          "montant": 1598
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-11-13",
+          "reference": "BC-ANOM-046",
+          "montant": 1360
+        },
+        {
+          "type": "facture",
+          "date": "2026-11-09",
+          "reference": "FAC-ANOM-046",
+          "montant": 2920
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-047",
+      "fournisseur": "AutoVendor 47",
+      "anomalyDescription": "Montant BC avec séparateur décimal ambigu",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-12-14",
+          "reference": "DDV-ANOM-047",
+          "montant": 1611
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-12-14",
+          "reference": "BC-ANOM-047",
+          "montant": 1370
+        },
+        {
+          "type": "facture",
+          "date": "2026-12-10",
+          "reference": "FAC-ANOM-047",
+          "montant": 2940
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-048",
+      "fournisseur": "AutoVendor 48",
+      "anomalyDescription": "Email de relance daté avant le devis",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-01-15",
+          "reference": "DDV-ANOM-048",
+          "montant": 1624
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-01-15",
+          "reference": "BC-ANOM-048",
+          "montant": 1380
+        },
+        {
+          "type": "facture",
+          "date": "2026-01-11",
+          "reference": "FAC-ANOM-048",
+          "montant": 2960
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-049",
+      "fournisseur": "AutoVendor 49",
+      "anomalyDescription": "Chronologie inversée sur un maillon",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-02-16",
+          "reference": "DDV-ANOM-049",
+          "montant": 1637
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-02-16",
+          "reference": "BC-ANOM-049",
+          "montant": 1390
+        },
+        {
+          "type": "facture",
+          "date": "2026-02-12",
+          "reference": "FAC-ANOM-049",
+          "montant": 2980
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-050",
+      "fournisseur": "AutoVendor 50",
+      "anomalyDescription": "Écart progressif entre devis et facture",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-03-17",
+          "reference": "DDV-ANOM-050",
+          "montant": 1650
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-03-17",
+          "reference": "BC-ANOM-050",
+          "montant": 1400
+        },
+        {
+          "type": "facture",
+          "date": "2026-03-13",
+          "reference": "FAC-ANOM-050",
+          "montant": 3000
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-051",
+      "fournisseur": "AutoVendor 51",
+      "anomalyDescription": "Email de relance daté avant le devis",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-04-01",
+          "reference": "DDV-ANOM-051",
+          "montant": 1663
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-04-01",
+          "reference": "BC-ANOM-051",
+          "montant": 1410
+        },
+        {
+          "type": "facture",
+          "date": "2026-04-01",
+          "reference": "FAC-ANOM-051",
+          "montant": 3020
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-052",
+      "fournisseur": "AutoVendor 52",
+      "anomalyDescription": "Email de relance daté avant le devis",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-05-02",
+          "reference": "DDV-ANOM-052",
+          "montant": 1676
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-05-02",
+          "reference": "BC-ANOM-052",
+          "montant": 1420
+        },
+        {
+          "type": "facture",
+          "date": "2026-05-01",
+          "reference": "FAC-ANOM-052",
+          "montant": 3040
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-053",
+      "fournisseur": "AutoVendor 53",
+      "anomalyDescription": "Écart progressif entre devis et facture",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-06-03",
+          "reference": "DDV-ANOM-053",
+          "montant": 1689
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-06-03",
+          "reference": "BC-ANOM-053",
+          "montant": 1430
+        },
+        {
+          "type": "facture",
+          "date": "2026-06-01",
+          "reference": "FAC-ANOM-053",
+          "montant": 3060
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-054",
+      "fournisseur": "AutoVendor 54",
+      "anomalyDescription": "Montant BC avec séparateur décimal ambigu",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-07-04",
+          "reference": "DDV-ANOM-054",
+          "montant": 1702
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-07-04",
+          "reference": "BC-ANOM-054",
+          "montant": 1440
+        },
+        {
+          "type": "facture",
+          "date": "2026-07-01",
+          "reference": "FAC-ANOM-054",
+          "montant": 3080
+        }
+      ]
+    },
+    {
+      "scenarioId": "ANOM-055",
+      "fournisseur": "AutoVendor 55",
+      "anomalyDescription": "Email de relance daté avant le devis",
+      "steps": [
+        {
+          "type": "devis",
+          "date": "2026-08-05",
+          "reference": "DDV-ANOM-055",
+          "montant": 1715
+        },
+        {
+          "type": "bon_commande",
+          "date": "2026-08-05",
+          "reference": "BC-ANOM-055",
+          "montant": 1450
+        },
+        {
+          "type": "facture",
+          "date": "2026-08-01",
+          "reference": "FAC-ANOM-055",
+          "montant": 3100
+        }
+      ]
+    }
+  ]
+}

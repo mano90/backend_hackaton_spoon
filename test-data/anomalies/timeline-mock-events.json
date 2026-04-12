@@ -1,0 +1,327 @@
+{
+  "meta": {
+    "purpose": "Événements fictifs pour valider tri / frise (hors API directe)"
+  },
+  "globalOrderStress": [
+    {
+      "id": "evt-0",
+      "type": "bon_commande",
+      "date": "2026-01-01",
+      "scenarioId": "S-1",
+      "reference": "REF-0",
+      "montant": null
+    },
+    {
+      "id": "evt-1",
+      "type": "mouvement",
+      "date": "2026-02-02",
+      "scenarioId": "S-2",
+      "reference": "REF-1",
+      "montant": 100
+    },
+    {
+      "id": "evt-2",
+      "type": "mouvement",
+      "date": "2026-03-03",
+      "scenarioId": "S-3",
+      "reference": "REF-2",
+      "montant": 200
+    },
+    {
+      "id": "evt-3",
+      "type": "facture",
+      "date": "2026-04-04",
+      "scenarioId": "S-4",
+      "reference": "REF-3",
+      "montant": null
+    },
+    {
+      "id": "evt-4",
+      "type": "bon_commande",
+      "date": "2026-05-05",
+      "scenarioId": "S-5",
+      "reference": "REF-4",
+      "montant": 400
+    },
+    {
+      "id": "evt-5",
+      "type": "mouvement",
+      "date": "2026-06-06",
+      "scenarioId": "S-1",
+      "reference": "REF-5",
+      "montant": 500
+    },
+    {
+      "id": "evt-6",
+      "type": "bon_commande",
+      "date": "2026-07-07",
+      "scenarioId": "S-2",
+      "reference": "REF-6",
+      "montant": null
+    },
+    {
+      "id": "evt-7",
+      "type": "facture",
+      "date": "2026-08-08",
+      "scenarioId": "S-3",
+      "reference": "REF-7",
+      "montant": 700
+    },
+    {
+      "id": "evt-8",
+      "type": "mouvement",
+      "date": "2026-09-09",
+      "scenarioId": "S-4",
+      "reference": "REF-8",
+      "montant": 800
+    },
+    {
+      "id": "evt-9",
+      "type": "mouvement",
+      "date": "2026-10-10",
+      "scenarioId": "S-5",
+      "reference": "REF-9",
+      "montant": null
+    },
+    {
+      "id": "evt-10",
+      "type": "bon_commande",
+      "date": "2026-11-11",
+      "scenarioId": "S-1",
+      "reference": "REF-10",
+      "montant": 1000
+    },
+    {
+      "id": "evt-11",
+      "type": "facture",
+      "date": "2026-12-12",
+      "scenarioId": "S-2",
+      "reference": "REF-11",
+      "montant": 1100
+    },
+    {
+      "id": "evt-12",
+      "type": "bon_commande",
+      "date": "2026-01-13",
+      "scenarioId": "S-3",
+      "reference": "REF-12",
+      "montant": null
+    },
+    {
+      "id": "evt-13",
+      "type": "bon_commande",
+      "date": "2026-02-14",
+      "scenarioId": "S-4",
+      "reference": "REF-13",
+      "montant": 1300
+    },
+    {
+      "id": "evt-14",
+      "type": "bon_commande",
+      "date": "2026-03-15",
+      "scenarioId": "S-5",
+      "reference": "REF-14",
+      "montant": 1400
+    },
+    {
+      "id": "evt-15",
+      "type": "mouvement",
+      "date": "2026-04-16",
+      "scenarioId": "S-1",
+      "reference": "REF-15",
+      "montant": null
+    },
+    {
+      "id": "evt-16",
+      "type": "facture",
+      "date": "2026-05-17",
+      "scenarioId": "S-2",
+      "reference": "REF-16",
+      "montant": 1600
+    },
+    {
+      "id": "evt-17",
+      "type": "facture",
+      "date": "2026-06-18",
+      "scenarioId": "S-3",
+      "reference": "REF-17",
+      "montant": 1700
+    },
+    {
+      "id": "evt-18",
+      "type": "mouvement",
+      "date": "2026-07-19",
+      "scenarioId": "S-4",
+      "reference": "REF-18",
+      "montant": null
+    },
+    {
+      "id": "evt-19",
+      "type": "facture",
+      "date": "2026-08-20",
+      "scenarioId": "S-5",
+      "reference": "REF-19",
+      "montant": 1900
+    },
+    {
+      "id": "evt-20",
+      "type": "bon_commande",
+      "date": "2026-09-21",
+      "scenarioId": "S-1",
+      "reference": "REF-20",
+      "montant": 2000
+    },
+    {
+      "id": "evt-21",
+      "type": "bon_commande",
+      "date": "2026-10-22",
+      "scenarioId": "S-2",
+      "reference": "REF-21",
+      "montant": null
+    },
+    {
+      "id": "evt-22",
+      "type": "mouvement",
+      "date": "2026-11-23",
+      "scenarioId": "S-3",
+      "reference": "REF-22",
+      "montant": 2200
+    },
+    {
+      "id": "evt-23",
+      "type": "mouvement",
+      "date": "2026-12-24",
+      "scenarioId": "S-4",
+      "reference": "REF-23",
+      "montant": 2300
+    },
+    {
+      "id": "evt-24",
+      "type": "mouvement",
+      "date": "2026-01-25",
+      "scenarioId": "S-5",
+      "reference": "REF-24",
+      "montant": null
+    },
+    {
+      "id": "evt-25",
+      "type": "bon_commande",
+      "date": "2026-02-26",
+      "scenarioId": "S-1",
+      "reference": "REF-25",
+      "montant": 2500
+    },
+    {
+      "id": "evt-26",
+      "type": "facture",
+      "date": "2026-03-27",
+      "scenarioId": "S-2",
+      "reference": "REF-26",
+      "montant": 2600
+    },
+    {
+      "id": "evt-27",
+      "type": "facture",
+      "date": "2026-04-28",
+      "scenarioId": "S-3",
+      "reference": "REF-27",
+      "montant": null
+    },
+    {
+      "id": "evt-28",
+      "type": "facture",
+      "date": "2026-05-01",
+      "scenarioId": "S-4",
+      "reference": "REF-28",
+      "montant": 2800
+    },
+    {
+      "id": "evt-29",
+      "type": "mouvement",
+      "date": "2026-06-02",
+      "scenarioId": "S-5",
+      "reference": "REF-29",
+      "montant": 2900
+    },
+    {
+      "id": "evt-30",
+      "type": "facture",
+      "date": "2026-07-03",
+      "scenarioId": "S-1",
+      "reference": "REF-30",
+      "montant": null
+    },
+    {
+      "id": "evt-31",
+      "type": "facture",
+      "date": "2026-08-04",
+      "scenarioId": "S-2",
+      "reference": "REF-31",
+      "montant": 3100
+    },
+    {
+      "id": "evt-32",
+      "type": "facture",
+      "date": "2026-09-05",
+      "scenarioId": "S-3",
+      "reference": "REF-32",
+      "montant": 3200
+    },
+    {
+      "id": "evt-33",
+      "type": "mouvement",
+      "date": "2026-10-06",
+      "scenarioId": "S-4",
+      "reference": "REF-33",
+      "montant": null
+    },
+    {
+      "id": "evt-34",
+      "type": "bon_commande",
+      "date": "2026-11-07",
+      "scenarioId": "S-5",
+      "reference": "REF-34",
+      "montant": 3400
+    },
+    {
+      "id": "evt-35",
+      "type": "bon_commande",
+      "date": "2026-12-08",
+      "scenarioId": "S-1",
+      "reference": "REF-35",
+      "montant": 3500
+    },
+    {
+      "id": "evt-36",
+      "type": "facture",
+      "date": "2026-01-09",
+      "scenarioId": "S-2",
+      "reference": "REF-36",
+      "montant": null
+    },
+    {
+      "id": "evt-37",
+      "type": "bon_commande",
+      "date": "2026-02-10",
+      "scenarioId": "S-3",
+      "reference": "REF-37",
+      "montant": 3700
+    },
+    {
+      "id": "evt-38",
+      "type": "bon_commande",
+      "date": "2026-03-11",
+      "scenarioId": "S-4",
+      "reference": "REF-38",
+      "montant": 3800
+    },
+    {
+      "id": "evt-39",
+      "type": "mouvement",
+      "date": "2026-04-12",
+      "scenarioId": "S-5",
+      "reference": "REF-39",
+      "montant": null
+    }
+  ]
+}

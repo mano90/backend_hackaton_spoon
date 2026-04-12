@@ -1,0 +1,23 @@
+[
+  {
+    "montant": 1250.5,
+    "date": "2026-06-01",
+    "libelle": "VIR client TEST JSON bulk #1",
+    "type_mouvement": "entree",
+    "reference": "JSON-BULK-001"
+  },
+  {
+    "montant": 88.2,
+    "date": "2026-06-02",
+    "libelle": "PAIEMENT CB TEST JSON",
+    "type_mouvement": "sortie",
+    "reference": "JSON-BULK-002"
+  },
+  {
+    "montant": 5000,
+    "date": "2026-06-03",
+    "libelle": "Prélèvement loyer (test)",
+    "type_mouvement": "sortie",
+    "reference": "JSON-BULK-003"
+  }
+]

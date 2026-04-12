@@ -1,0 +1,56 @@
+scenarioId;fournisseur;anomaly;step_types;step_dates
+ANOM-001;Fournisseur Alpha;Bon de livraison AVANT le bon de commande (dates incohérentes);devis|bon_livraison|bon_commande;2026-03-10|2026-03-01|2026-03-15
+ANOM-002;Beta Industries;Réception avant livraison;bon_commande|bon_reception|bon_livraison;2026-02-20|2026-02-18|2026-02-25
+ANOM-003;Gamma SAS;Facture avec montant différent du BC (écart);bon_commande|facture;2026-04-01|2026-04-20
+ANOM-004;Delta Log;Paiement (mouvement) avant facture;facture|mouvement;2026-05-10|2026-05-01
+ANOM-005;Epsilon;Devis manquant, BC seul;bon_commande;2026-01-15
+ANOM-006;Zeta Corp;Montants négatifs ou nuls sur documents;devis|facture;2026-06-01|2026-06-15
+ANOM-007;Eta;Même référence réutilisée sur deux fournisseurs (collision);facture|facture;2026-07-01|2026-07-02
+ANOM-008;Theta;Date facture avant devis;facture|devis;2026-01-01|2026-02-01
+ANOM-009;Iota;scenarioId manquant sur un document de la chaîne;bon_commande|facture;2026-08-10|2026-08-20
+ANOM-010;Kappa;Livraison et commande même jour mais BL référence commande erronée;bon_commande|bon_livraison;2026-09-01|2026-09-05
+ANOM-011;AutoVendor 11;Montant BC avec séparateur décimal ambigu;devis|bon_commande|facture;2026-12-12|2026-12-12|2026-12-08
+ANOM-012;AutoVendor 12;Écart progressif entre devis et facture;devis|bon_commande|facture;2026-01-13|2026-01-13|2026-01-09
+ANOM-013;AutoVendor 13;Montant BC avec séparateur décimal ambigu;devis|bon_commande|facture;2026-02-14|2026-02-14|2026-02-10
+ANOM-014;AutoVendor 14;Chronologie inversée sur un maillon;devis|bon_commande|facture;2026-03-15|2026-03-15|2026-03-11
+ANOM-015;AutoVendor 15;Écart progressif entre devis et facture;devis|bon_commande|facture;2026-04-16|2026-04-16|2026-04-12
+ANOM-016;AutoVendor 16;Email de relance daté avant le devis;devis|bon_commande|facture;2026-05-17|2026-05-17|2026-05-13
+ANOM-017;AutoVendor 17;Email de relance daté avant le devis;devis|bon_commande|facture;2026-06-01|2026-06-01|2026-06-01
+ANOM-018;AutoVendor 18;Chronologie inversée sur un maillon;devis|bon_commande|facture;2026-07-02|2026-07-02|2026-07-01
+ANOM-019;AutoVendor 19;Écart progressif entre devis et facture;devis|bon_commande|facture;2026-08-03|2026-08-03|2026-08-01
+ANOM-020;AutoVendor 20;Montant BC avec séparateur décimal ambigu;devis|bon_commande|facture;2026-09-04|2026-09-04|2026-09-01
+ANOM-021;AutoVendor 21;Écart progressif entre devis et facture;devis|bon_commande|facture;2026-10-05|2026-10-05|2026-10-01
+ANOM-022;AutoVendor 22;Écart progressif entre devis et facture;devis|bon_commande|facture;2026-11-06|2026-11-06|2026-11-02
+ANOM-023;AutoVendor 23;Écart progressif entre devis et facture;devis|bon_commande|facture;2026-12-07|2026-12-07|2026-12-03
+ANOM-024;AutoVendor 24;Chronologie inversée sur un maillon;devis|bon_commande|facture;2026-01-08|2026-01-08|2026-01-04
+ANOM-025;AutoVendor 25;Montant BC avec séparateur décimal ambigu;devis|bon_commande|facture;2026-02-09|2026-02-09|2026-02-05
+ANOM-026;AutoVendor 26;Montant BC avec séparateur décimal ambigu;devis|bon_commande|facture;2026-03-10|2026-03-10|2026-03-06
+ANOM-027;AutoVendor 27;Montant BC avec séparateur décimal ambigu;devis|bon_commande|facture;2026-04-11|2026-04-11|2026-04-07
+ANOM-028;AutoVendor 28;Montant BC avec séparateur décimal ambigu;devis|bon_commande|facture;2026-05-12|2026-05-12|2026-05-08
+ANOM-029;AutoVendor 29;Chronologie inversée sur un maillon;devis|bon_commande|facture;2026-06-13|2026-06-13|2026-06-09
+ANOM-030;AutoVendor 30;Montant BC avec séparateur décimal ambigu;devis|bon_commande|facture;2026-07-14|2026-07-14|2026-07-10
+ANOM-031;AutoVendor 31;Email de relance daté avant le devis;devis|bon_commande|facture;2026-08-15|2026-08-15|2026-08-11
+ANOM-032;AutoVendor 32;Email de relance daté avant le devis;devis|bon_commande|facture;2026-09-16|2026-09-16|2026-09-12
+ANOM-033;AutoVendor 33;Email de relance daté avant le devis;devis|bon_commande|facture;2026-10-17|2026-10-17|2026-10-13
+ANOM-034;AutoVendor 34;Montant BC avec séparateur décimal ambigu;devis|bon_commande|facture;2026-11-01|2026-11-01|2026-11-01
+ANOM-035;AutoVendor 35;Montant BC avec séparateur décimal ambigu;devis|bon_commande|facture;2026-12-02|2026-12-02|2026-12-01
+ANOM-036;AutoVendor 36;Montant BC avec séparateur décimal ambigu;devis|bon_commande|facture;2026-01-03|2026-01-03|2026-01-01
+ANOM-037;AutoVendor 37;Montant BC avec séparateur décimal ambigu;devis|bon_commande|facture;2026-02-04|2026-02-04|2026-02-01
+ANOM-038;AutoVendor 38;Montant BC avec séparateur décimal ambigu;devis|bon_commande|facture;2026-03-05|2026-03-05|2026-03-01
+ANOM-039;AutoVendor 39;Email de relance daté avant le devis;devis|bon_commande|facture;2026-04-06|2026-04-06|2026-04-02
+ANOM-040;AutoVendor 40;Écart progressif entre devis et facture;devis|bon_commande|facture;2026-05-07|2026-05-07|2026-05-03
+ANOM-041;AutoVendor 41;Chronologie inversée sur un maillon;devis|bon_commande|facture;2026-06-08|2026-06-08|2026-06-04
+ANOM-042;AutoVendor 42;Montant BC avec séparateur décimal ambigu;devis|bon_commande|facture;2026-07-09|2026-07-09|2026-07-05
+ANOM-043;AutoVendor 43;Écart progressif entre devis et facture;devis|bon_commande|facture;2026-08-10|2026-08-10|2026-08-06
+ANOM-044;AutoVendor 44;Montant BC avec séparateur décimal ambigu;devis|bon_commande|facture;2026-09-11|2026-09-11|2026-09-07
+ANOM-045;AutoVendor 45;Écart progressif entre devis et facture;devis|bon_commande|facture;2026-10-12|2026-10-12|2026-10-08
+ANOM-046;AutoVendor 46;Chronologie inversée sur un maillon;devis|bon_commande|facture;2026-11-13|2026-11-13|2026-11-09
+ANOM-047;AutoVendor 47;Email de relance daté avant le devis;devis|bon_commande|facture;2026-12-14|2026-12-14|2026-12-10
+ANOM-048;AutoVendor 48;Email de relance daté avant le devis;devis|bon_commande|facture;2026-01-15|2026-01-15|2026-01-11
+ANOM-049;AutoVendor 49;Chronologie inversée sur un maillon;devis|bon_commande|facture;2026-02-16|2026-02-16|2026-02-12
+ANOM-050;AutoVendor 50;Écart progressif entre devis et facture;devis|bon_commande|facture;2026-03-17|2026-03-17|2026-03-13
+ANOM-051;AutoVendor 51;Chronologie inversée sur un maillon;devis|bon_commande|facture;2026-04-01|2026-04-01|2026-04-01
+ANOM-052;AutoVendor 52;Chronologie inversée sur un maillon;devis|bon_commande|facture;2026-05-02|2026-05-02|2026-05-01
+ANOM-053;AutoVendor 53;Montant BC avec séparateur décimal ambigu;devis|bon_commande|facture;2026-06-03|2026-06-03|2026-06-01
+ANOM-054;AutoVendor 54;Écart progressif entre devis et facture;devis|bon_commande|facture;2026-07-04|2026-07-04|2026-07-01
+ANOM-055;AutoVendor 55;Email de relance daté avant le devis;devis|bon_commande|facture;2026-08-05|2026-08-05|2026-08-01
