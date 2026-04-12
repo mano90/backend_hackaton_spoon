@@ -35,7 +35,18 @@ router.post('/run/:mouvementId', async (req: Request, res: Response) => {
       return;
     }
 
-    const result = await performRapprochement(mouvement, factures);
+    // Fetch all mouvements for SA-1 duplicate detection
+    const allMovIds = await redis.smembers('mouvement:ids');
+    const allMouvements: MouvementBancaire[] = (
+      await Promise.all(
+        allMovIds.map(async (id: string) => {
+          const d = await redis.get(`mouvement:${id}`);
+          return d ? JSON.parse(d) : null;
+        })
+      )
+    ).filter(Boolean);
+
+    const result = await performRapprochement(mouvement, factures, allMouvements);
 
     const rapprochement: Rapprochement = {
       id: uuidv4(),
@@ -82,6 +93,16 @@ router.post('/run-all', async (_req: Request, res: Response) => {
       return;
     }
 
+    // Load all mouvements once for SA-1 duplicate detection
+    const allMouvements: MouvementBancaire[] = (
+      await Promise.all(
+        mouvementIds.map(async (id: string) => {
+          const d = await redis.get(`mouvement:${id}`);
+          return d ? JSON.parse(d) : null;
+        })
+      )
+    ).filter(Boolean);
+
     const results: Rapprochement[] = [];
 
     for (const mid of mouvementIds) {
@@ -90,7 +111,7 @@ router.post('/run-all', async (_req: Request, res: Response) => {
       const mouvement: MouvementBancaire = JSON.parse(mData);
       if (mouvement.type_mouvement !== 'sortie') continue;
 
-      const result = await performRapprochement(mouvement, factures);
+      const result = await performRapprochement(mouvement, factures, allMouvements);
 
       const rapprochement: Rapprochement = {
         id: uuidv4(),
