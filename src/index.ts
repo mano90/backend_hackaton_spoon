@@ -33,10 +33,12 @@ app.get("/api/health", (_req, res) => {
 app.listen(PORT, async () => {
   console.log(`[Server] Running on http://localhost:${PORT}`);
 
-  // Run seeder on startup
+  // Run seeder on startup, then duplicate-detection test fixtures
   try {
     const { seed } = await import('./seed');
     await seed();
+    const { seedDuplicateFixtures } = await import('./scripts/seed-duplicate-fixtures');
+    await seedDuplicateFixtures();
   } catch (err) {
     console.error('[Seed] Failed:', err);
   }

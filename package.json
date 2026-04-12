@@ -7,7 +7,9 @@
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "ts-node --transpile-only src/utils/facture-matching.self-test.ts"
+    "test": "ts-node --transpile-only src/utils/facture-matching.self-test.ts",
+    "seed:duplicates": "ts-node --transpile-only src/scripts/seed-duplicate-fixtures.ts",
+    "seed:duplicates:clean": "ts-node --transpile-only src/scripts/seed-duplicate-fixtures.ts --clean-only"
   },
   "keywords": [],
   "author": "",

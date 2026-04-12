@@ -4,11 +4,72 @@ import { v4 as uuidv4 } from 'uuid';
 import redis from '../services/redis.service';
 import { ingestOnePdf, VALID_DOC_TYPES } from '../services/document-ingest.service';
 import { linkDocumentsIntoDossiers, type DossierLinkInput } from '../agents/dossier-link.agent';
-import { clusterFactureDuplicates } from '../services/facture-cluster.service';
+import {
+  clusterFactureDuplicates,
+  type ClusterEdgeReason,
+  type DuplicateGroup,
+} from '../services/facture-cluster.service';
 import { backfillMissingContentSha256, persistDocumentHashFromBase64, unregisterDocumentHash } from '../services/document-hash.service';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+
+const DUPLICATE_REASON_LABELS_FR: Record<ClusterEdgeReason, string> = {
+  byte_identical: 'Fichier identique (empreinte SHA-256)',
+  strict_triplet: 'Même fournisseur, montant et référence',
+  human_error_amount: 'Montants très proches (erreur de saisie possible)',
+  multi_channel: 'Doublon multi-canal (analyse sémantique)',
+};
+
+function syntheticSimilarityPercent(reasons: ClusterEdgeReason[]): number | null {
+  if (!reasons.length) return null;
+  const byReason: Partial<Record<ClusterEdgeReason, number>> = {
+    byte_identical: 100,
+    strict_triplet: 95,
+    human_error_amount: 85,
+    multi_channel: 75,
+  };
+  let max = 0;
+  for (const r of reasons) {
+    const s = byReason[r];
+    if (s != null && s > max) max = s;
+  }
+  return max > 0 ? max : null;
+}
+
+interface EnrichedDuplicateGroup extends DuplicateGroup {
+  documents: Record<string, unknown>[];
+  reasonLabels: string[];
+  syntheticSimilarity: number | null;
+}
+
+async function enrichDuplicateGroups(groups: DuplicateGroup[]): Promise<EnrichedDuplicateGroup[]> {
+  const allIds = [...new Set(groups.flatMap((g) => g.ids))];
+  const idToDoc = new Map<string, Record<string, unknown>>();
+  await Promise.all(
+    allIds.map(async (id) => {
+      const raw = await redis.get(`document:${id}`);
+      if (raw) {
+        try {
+          idToDoc.set(id, JSON.parse(raw) as Record<string, unknown>);
+        } catch {
+          /* skip */
+        }
+      }
+    })
+  );
+
+  return groups.map((g) => {
+    const documents = g.ids.map((id) => idToDoc.get(id)).filter((d): d is Record<string, unknown> => d != null);
+    const reasonLabels = g.reasons.map((r) => DUPLICATE_REASON_LABELS_FR[r] ?? r);
+    return {
+      ...g,
+      documents,
+      reasonLabels,
+      syntheticSimilarity: syntheticSimilarityPercent(g.reasons),
+    };
+  });
+}
 
 const BATCH_MAX_FILES = 30;
 const uploadBatch = multer({
@@ -170,7 +231,8 @@ router.get('/factures/duplicate-groups', async (req: Request, res: Response) => 
   try {
     const maxLlmCalls = Math.min(500, Math.max(0, Number(req.query.maxLlmCalls) || 0));
     const result = await clusterFactureDuplicates({ maxLlmCalls });
-    res.json(result);
+    const groups = await enrichDuplicateGroups(result.groups);
+    res.json({ groups, llmCallsUsed: result.llmCallsUsed });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     res.status(500).json({ error: message });
