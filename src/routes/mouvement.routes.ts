@@ -9,40 +9,31 @@ import { emitImportProgress } from '../services/realtime-import.service';
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
-function getImportSocketId(req: Request): string | undefined {
-  const h = req.headers['x-import-socket-id'];
-  const fromHeader = typeof h === 'string' ? h.trim() : Array.isArray(h) ? h[0]?.trim() : '';
-  const b = req.body as { socketId?: string } | undefined;
-  const fromBody = typeof b?.socketId === 'string' ? b.socketId.trim() : '';
-  return fromHeader || fromBody || undefined;
-}
-
 const REDIS_CHUNK = 120;
 
 /**
  * Import CSV (relevé / export) : détection ; ou , colonnes date, montant, libellé…
- * Progression temps réel : header `x-import-socket-id` ou champ form `socketId` (Socket.io).
+ * Progression temps réel : diffusée à tous les clients Socket.io connectés.
  */
 router.post('/import-csv', upload.single('file'), async (req: Request, res: Response) => {
-  const sid = getImportSocketId(req);
   try {
     if (!req.file) {
-      emitImportProgress(sid, { phase: 'error', message: 'Fichier manquant', percent: 0 });
+      emitImportProgress({ phase: 'error', message: 'Fichier manquant', percent: 0 });
       res.status(400).json({ error: 'Fichier manquant (champ file, CSV UTF-8)' });
       return;
     }
     const name = (req.file.originalname || '').toLowerCase();
     if (!name.endsWith('.csv') && !name.endsWith('.txt')) {
-      emitImportProgress(sid, { phase: 'error', message: 'Extension invalide', percent: 0 });
+      emitImportProgress( { phase: 'error', message: 'Extension invalide', percent: 0 });
       res.status(400).json({ error: 'Extension attendue : .csv ou .txt' });
       return;
     }
 
-    emitImportProgress(sid, { phase: 'reading', message: 'Lecture et analyse du CSV…', percent: 8 });
+    emitImportProgress( { phase: 'reading', message: 'Lecture et analyse du CSV…', percent: 8 });
 
     const { rows, errors, headers } = parseMouvementsCsv(req.file.buffer);
 
-    emitImportProgress(sid, {
+    emitImportProgress( {
       phase: 'parsing',
       message: `${rows.length} ligne(s) valide(s)${errors.length ? ` (${errors.length} ligne(s) ignorée(s))` : ''}`,
       percent: 22,
@@ -51,7 +42,7 @@ router.post('/import-csv', upload.single('file'), async (req: Request, res: Resp
     });
 
     if (!rows.length) {
-      emitImportProgress(sid, { phase: 'error', message: 'Aucun mouvement valide', percent: 0 });
+      emitImportProgress( { phase: 'error', message: 'Aucun mouvement valide', percent: 0 });
       res.status(400).json({
         error: 'Aucun mouvement valide',
         parseErrors: errors,
@@ -82,7 +73,7 @@ router.post('/import-csv', upload.single('file'), async (req: Request, res: Resp
       await pipeline.exec();
       const current = Math.min(i + slice.length, total);
       const pct = 25 + Math.round((current / total) * 70);
-      emitImportProgress(sid, {
+      emitImportProgress( {
         phase: 'saving',
         message: `Enregistrement en base… ${current} / ${total}`,
         percent: Math.min(pct, 98),
@@ -91,7 +82,7 @@ router.post('/import-csv', upload.single('file'), async (req: Request, res: Resp
       });
     }
 
-    emitImportProgress(sid, {
+    emitImportProgress( {
       phase: 'done',
       message: `Import terminé : ${total} mouvement(s)`,
       percent: 100,
@@ -109,7 +100,7 @@ router.post('/import-csv', upload.single('file'), async (req: Request, res: Resp
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('CSV import error:', err);
-    emitImportProgress(sid, { phase: 'error', message, percent: 0 });
+    emitImportProgress( { phase: 'error', message, percent: 0 });
     res.status(500).json({ error: message });
   }
 });
@@ -145,18 +136,17 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
-// Bulk create mouvements (JSON array) — progression : header `x-import-socket-id`
+// Bulk create mouvements (JSON array) — progression diffusée à tous les clients Socket.io
 router.post('/bulk', async (req: Request, res: Response) => {
-  const sid = getImportSocketId(req);
   try {
     const items = req.body;
     if (!Array.isArray(items) || items.length === 0) {
-      emitImportProgress(sid, { phase: 'error', message: 'Tableau vide ou invalide', percent: 0 });
+      emitImportProgress( { phase: 'error', message: 'Tableau vide ou invalide', percent: 0 });
       res.status(400).json({ error: 'Body must be a non-empty array of mouvements' });
       return;
     }
 
-    emitImportProgress(sid, {
+    emitImportProgress( {
       phase: 'parsing',
       message: `Préparation de ${items.length} mouvement(s)…`,
       percent: 15,
@@ -186,7 +176,7 @@ router.post('/bulk', async (req: Request, res: Response) => {
       await pipeline.exec();
       const current = Math.min(i + slice.length, total);
       const pct = 20 + Math.round((current / total) * 75);
-      emitImportProgress(sid, {
+      emitImportProgress( {
         phase: 'saving',
         message: `Enregistrement… ${current} / ${total}`,
         percent: Math.min(pct, 99),
@@ -195,7 +185,7 @@ router.post('/bulk', async (req: Request, res: Response) => {
       });
     }
 
-    emitImportProgress(sid, {
+    emitImportProgress( {
       phase: 'done',
       message: `Bulk terminé : ${total} mouvement(s)`,
       percent: 100,
@@ -206,7 +196,7 @@ router.post('/bulk', async (req: Request, res: Response) => {
     res.json({ success: true, count: mouvements.length, mouvements });
   } catch (err: any) {
     console.error('Mouvement bulk creation error:', err);
-    emitImportProgress(sid, { phase: 'error', message: err.message || String(err), percent: 0 });
+    emitImportProgress( { phase: 'error', message: err.message || String(err), percent: 0 });
     res.status(500).json({ error: err.message });
   }
 });

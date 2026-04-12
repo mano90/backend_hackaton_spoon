@@ -8,6 +8,9 @@ import { checkFactureSimilarity } from '../agents/similarity.agent';
 export const VALID_DOC_TYPES = ['devis', 'bon_commande', 'bon_livraison', 'bon_reception', 'facture', 'email'] as const;
 export const CONFIDENCE_THRESHOLD = 75;
 
+/** Types pour lesquels on compare avec les documents déjà enregistrés du même type (pas les emails). */
+export const DUPLICATE_CHECK_DOC_TYPES: readonly string[] = ['facture', 'bon_commande'];
+
 export type IngestSaved = {
   kind: 'saved';
   document: Record<string, unknown>;
@@ -40,17 +43,36 @@ export type IngestError = {
 
 export type IngestResult = IngestSaved | IngestPendingClassification | IngestPendingDuplicate | IngestError;
 
+/** Sous-étapes d’ingestion après réception (batch) : indices 0 … INGEST_STEP_COUNT-1 */
+export const INGEST_STEP_COUNT = 5;
+
+export type IngestProgressCallback = (info: {
+  stepIndex: number;
+  stepTotal: number;
+  stage: string;
+  label: string;
+}) => void;
+
 /**
  * Extraction + classification + persistance (ou pending) pour un PDF — logique partagée upload simple / batch.
  */
 export async function ingestOnePdf(
   buffer: Buffer,
   originalName: string,
-  body?: { docType?: string; /** défaut true : un dossier (scenarioId) par PDF ; false pour batch avant regroupement agent */ assignDefaultScenarioId?: boolean }
+  body?: { docType?: string; /** défaut true : un dossier (scenarioId) par PDF ; false pour batch avant regroupement agent */ assignDefaultScenarioId?: boolean },
+  progress?: IngestProgressCallback
 ): Promise<IngestResult> {
   try {
+    const p = (stepIndex: number, stage: string, label: string) =>
+      progress?.({ stepIndex, stepTotal: INGEST_STEP_COUNT, stage, label });
+
+    p(0, 'extract_text', 'Extraction du texte PDF');
     const rawText = await extractTextFromPDF(buffer);
+
+    p(1, 'extract_fields', 'Extraction des champs (montant, date, fournisseur…)');
     const extracted = await extractFactureData(rawText);
+
+    p(2, 'classify', 'Classification du type de document');
     const classification = await classifyDocument(rawText, originalName);
 
     const forcedType = body?.docType;
@@ -74,6 +96,8 @@ export async function ingestOnePdf(
     };
 
     if (isUncertain) {
+      p(3, 'persist_pending', 'Enregistrement provisoire (classification incertaine)');
+      doc.pendingKind = 'classification';
       const pendingKey = `document:pending:${doc.id}`;
       await redis.set(pendingKey, JSON.stringify(doc), 'EX', 600);
       await redis.set(`${pendingKey}:pdf`, buffer.toString('base64'), 'EX', 600);
@@ -86,20 +110,22 @@ export async function ingestOnePdf(
       };
     }
 
-    if (docType === 'facture') {
+    if (DUPLICATE_CHECK_DOC_TYPES.includes(docType)) {
+      const dupLabel = docType === 'facture' ? 'factures' : 'bons de commande';
+      p(3, 'verify_duplicate', `Vérification des doublons (${dupLabel})`);
       const existingIds = await redis.smembers('document:ids');
-      const existingFactures = (
+      const existingSameType = (
         await Promise.all(
           existingIds.map(async (id: string) => {
             const data = await redis.get(`document:${id}`);
             if (!data) return null;
             const d = JSON.parse(data);
-            return d.docType === 'facture' ? d : null;
+            return d.docType === docType ? d : null;
           })
         )
       ).filter(Boolean) as Record<string, unknown>[];
 
-      if (existingFactures.length > 0) {
+      if (existingSameType.length > 0) {
         const similarity = await checkFactureSimilarity(
           {
             montant: (doc.montant as number) || 0,
@@ -109,17 +135,29 @@ export async function ingestOnePdf(
             rawText: doc.rawText as string,
             fileSize: buffer.length,
           },
-          existingFactures.map((f: Record<string, unknown>) => ({
+          existingSameType.map((f: Record<string, unknown>) => ({
             id: f.id as string,
             montant: (f.montant as number) || 0,
             date: f.date as string,
             fournisseur: f.fournisseur as string,
             reference: f.reference as string,
             fileName: f.fileName as string,
-          }))
+          })),
+          docType
         );
 
         if (similarity.hasDuplicate && similarity.confidence >= 70) {
+          p(4, 'persist_pending', 'Enregistrement provisoire (doublon détecté)');
+          const existingForPending = existingSameType.find(
+            (f: Record<string, unknown>) => f.id === similarity.duplicateId
+          ) as Record<string, unknown> | undefined;
+          doc.pendingKind = 'duplicate';
+          doc.similarity = {
+            duplicateId: similarity.duplicateId!,
+            confidence: similarity.confidence,
+            reason: similarity.reason,
+            existingFileName: (existingForPending?.fileName as string) || undefined,
+          };
           const pendingKey = `document:pending:${doc.id}`;
           await redis.set(pendingKey, JSON.stringify(doc), 'EX', 600);
           await redis.set(`${pendingKey}:pdf`, buffer.toString('base64'), 'EX', 600);
@@ -132,7 +170,7 @@ export async function ingestOnePdf(
               confidence: similarity.confidence,
               reason: similarity.reason,
               existingDocument:
-                (existingFactures.find((f: Record<string, unknown>) => f.id === similarity.duplicateId) as
+                (existingSameType.find((f: Record<string, unknown>) => f.id === similarity.duplicateId) as
                   | Record<string, unknown>
                   | null) ?? null,
             },
@@ -140,8 +178,11 @@ export async function ingestOnePdf(
           };
         }
       }
+    } else {
+      p(3, 'verify', 'Contrôle avant enregistrement');
     }
 
+    p(4, 'persist', 'Enregistrement en base de données');
     await redis.set(`document:${doc.id}`, JSON.stringify(doc));
     await redis.set(`document:${doc.id}:pdf`, buffer.toString('base64'));
     await redis.sadd('document:ids', doc.id as string);

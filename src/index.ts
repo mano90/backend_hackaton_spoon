@@ -20,7 +20,7 @@ app.use(
   cors({
     origin: "http://localhost:4200",
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "x-import-socket-id"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 app.use(express.json());
@@ -44,10 +44,10 @@ attachRealtime(httpServer);
 httpServer.listen(PORT, async () => {
   console.log(`[Server] Running on http://localhost:${PORT}`);
 
-  try {
-    const { seed } = await import('./seed');
-    await seed();
-  } catch (err) {
-    console.error('[Seed] Failed:', err);
-  }
+  // try {
+  //   const { seed } = await import('./seed');
+  //   await seed();
+  // } catch (err) {
+  //   console.error('[Seed] Failed:', err);
+  // }
 });

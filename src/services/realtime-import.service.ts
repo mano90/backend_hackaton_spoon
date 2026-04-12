@@ -11,6 +11,22 @@ export type ImportProgressEvent = {
   total?: number;
 };
 
+/** Progression import PDF multiple (documents/upload-batch) */
+export type DocumentsBatchProgressEvent = {
+  phase: 'started' | 'processing' | 'linking' | 'done' | 'error';
+  message: string;
+  percent: number;
+  fileName?: string;
+  index?: number;
+  total?: number;
+  outcome?: string;
+  /** Étape métier courante (ex. extract_text, classify) — optionnel pour l’UI */
+  stage?: string;
+  /** Sous-étape i / nombre d’étapes pour ce fichier (optionnel) */
+  step?: number;
+  stepCount?: number;
+};
+
 export function attachRealtime(server: HttpServer): Server {
   io = new Server(server, {
     cors: { origin: 'http://localhost:4200', credentials: true },
@@ -21,11 +37,22 @@ export function attachRealtime(server: HttpServer): Server {
   return io;
 }
 
-export function emitImportProgress(socketId: string | undefined, ev: ImportProgressEvent): void {
-  if (!socketId || !io) return;
+/** Diffuse la progression d’import CSV à **tous** les clients Socket.io connectés. */
+export function emitImportProgress(ev: ImportProgressEvent): void {
+  if (!io) return;
   try {
-    io.to(socketId).emit('import:progress', ev);
+    io.emit('import:progress', ev);
   } catch (e) {
     console.warn('[realtime-import] emit failed:', e);
+  }
+}
+
+/** Diffuse la progression upload-batch PDF à **tous** les clients Socket.io connectés. */
+export function emitDocumentsBatchProgress(ev: DocumentsBatchProgressEvent): void {
+  if (!io) return;
+  try {
+    io.emit('documents-batch:progress', ev);
+  } catch (e) {
+    console.warn('[realtime-import] documents-batch emit failed:', e);
   }
 }
