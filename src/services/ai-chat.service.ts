@@ -41,6 +41,7 @@ export type StoredChatTurn = {
   at: string;
   timelineEvents?: unknown[];
   timelineMeta?: { scope: 'global' | 'scenario'; scenarioId?: string; purchaseLabel?: string };
+  dossierBriefs?: unknown[];
 };
 
 export async function getTurns(sessionId: string): Promise<StoredChatTurn[]> {
