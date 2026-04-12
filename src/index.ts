@@ -1,3 +1,4 @@
+import { createServer } from "http";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -8,13 +9,20 @@ import queryRoutes from "./routes/query.routes";
 import statsRoutes from "./routes/stats.routes";
 import documentsRoutes from "./routes/documents.routes";
 import timelineRoutes from "./routes/timeline.routes";
+import { attachRealtime } from "./services/realtime-import.service";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors({ origin: "http://localhost:4200", credentials: true }));
+app.use(
+  cors({
+    origin: "http://localhost:4200",
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 
 // Routes
@@ -30,10 +38,12 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-app.listen(PORT, async () => {
+const httpServer = createServer(app);
+attachRealtime(httpServer);
+
+httpServer.listen(PORT, async () => {
   console.log(`[Server] Running on http://localhost:${PORT}`);
 
-  // Run seeder on startup
   try {
     const { seed } = await import('./seed');
     await seed();

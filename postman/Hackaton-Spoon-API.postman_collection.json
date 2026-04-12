@@ -71,7 +71,7 @@
               ]
             },
             "url": "{{baseUrl}}/api/mouvements/import-csv",
-            "description": "Multipart : champ **file** uniquement. Taille max 5 Mo."
+            "description": "Obligatoire : **file** (multipart). La progression est diffusée en **broadcast** à tous les clients Socket.io connectés (ex. app Angular) — pas de paramètre `socketId`."
           }
         },
         {
@@ -156,10 +156,18 @@
                   "description": "Ajouter plusieurs lignes avec la même clé **files** dans Postman pour plusieurs PDF",
                   "type": "file",
                   "src": []
+                },
+                {
+                  "key": "docType",
+                  "value": "",
+                  "description": "Optionnel : forcer un type de document si l’ingestion le permet",
+                  "type": "text",
+                  "disabled": true
                 }
               ]
             },
-            "url": "{{baseUrl}}/api/documents/upload-batch"
+            "url": "{{baseUrl}}/api/documents/upload-batch",
+            "description": "Obligatoire : un ou plusieurs champs **files** (PDF). Optionnel : **docType**. Progression Socket.io : **broadcast** vers tous les clients connectés."
           }
         },
         {

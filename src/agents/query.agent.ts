@@ -6,7 +6,8 @@ import {
   getLlmHistory,
   type StoredChatTurn,
 } from '../services/ai-chat.service';
-import type { AIQuerySourceRef, AIQueryTimelineMeta } from '../types';
+import type { AIQueryDossierBrief, AIQuerySourceRef, AIQueryTimelineMeta } from '../types';
+import { buildDossierDigestBlock } from '../services/dossier-digest.service';
 import {
   fetchAllTimelineEvents,
   fetchScenarioTimelineEvents,
@@ -36,12 +37,30 @@ Frise chronologique (parcours d’achat) :
 - N’ajoute ${TIMELINE_GLOBAL} que si l’utilisateur demande explicitement une vue sur tous les achats ou toutes les chaînes à la fois (vue globale).
 - Quand tu inclus un jeton frise, garde "answer" court (2 à 4 phrases) : le parcours détaillé s’affiche visuellement.
 
+Dossiers / parcours d’achat (scenarioId) — questions du type : résumé, synthèse, état, points clés, anomalies, problèmes, étapes manquantes, ce qui reste à faire, comparaison entre dossiers :
+- Utilise impérativement le bloc SYNTHESE_AUTOMATIQUE_PAR_PARCOURS du message (étapes et alertes heuristiques) et les lignes DOCUMENTS.
+- Dans "answer", structure clairement : (1) synthèse du dossier concerné, (2) étapes / pièces déjà présentes dans l’ordre chronologique ou métier, (3) anomalies ou risques (écarts de rapprochement, facture sans paiement, chaîne incomplète, incohérences de montants), (4) si pertinent, pistes ou prochaines vérifications.
+- Si la question cible un ou plusieurs parcours identifiables, remplis "dossierBriefs" (voir schéma). Si la question ne porte pas sur un dossier (ex. simple recherche de montant), mets "dossierBriefs": [].
+- Pour un résumé « de tous les dossiers », tu peux fournir un objet par scenarioId distinct.
+- Ne invente pas d’IDs : reprends les scenarioId listés dans les données ou la synthèse automatique.
+
 Réponds en français. Quand tu t’appuies sur des faits issus des données, inclus références et montants.
 Réponds au format JSON strict :
 {
   "answer": "<ta réponse détaillée>",
-  "sources": ["<IDs exacts des lignes citées : documents, mouvements ou rapprochements, ou jetons spéciaux timeline ci-dessus>"]
+  "sources": ["<IDs exacts des lignes citées : documents, mouvements ou rapprochements, ou jetons spéciaux timeline ci-dessus>"],
+  "dossierBriefs": [
+    {
+      "scenarioId": "<id parcours ou null si plusieurs dossiers mélangés>",
+      "libelle": "<fournisseur ou titre court, optionnel>",
+      "resume": "<synthèse en 2 à 5 phrases>",
+      "etapes": ["<étape ou pièce clé 1>", "..."],
+      "anomalies": ["<alerte ou anomalie 1>", "..."],
+      "pistes": ["<piste ou action conseillée 1>", "..."]
+    }
+  ]
 }
+Si aucun dossier n’est concerné, utilise "dossierBriefs": [].
 Réponds UNIQUEMENT avec le JSON, sans markdown.`;
 
 function normalizeSourceIds(raw: unknown): string[] {
@@ -72,12 +91,38 @@ function purchaseLabelForScenarioFromDocs(
   return purchaseLabelFromEvents(evs, scenarioId);
 }
 
-function parseAgentJson(result: string): { answer: string; sources: string[] } {
+function normalizeDossierBriefs(raw: unknown): AIQueryDossierBrief[] | undefined {
+  if (raw === undefined) return undefined;
+  if (!Array.isArray(raw)) return undefined;
+  const out: AIQueryDossierBrief[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue;
+    const o = item as Record<string, unknown>;
+    const resume = typeof o.resume === 'string' ? o.resume : '';
+    if (!resume.trim()) continue;
+    const brief: AIQueryDossierBrief = { resume };
+    if (o.scenarioId != null) brief.scenarioId = typeof o.scenarioId === 'string' ? o.scenarioId : String(o.scenarioId);
+    if (typeof o.libelle === 'string') brief.libelle = o.libelle;
+    if (Array.isArray(o.etapes)) brief.etapes = o.etapes.filter((x) => typeof x === 'string') as string[];
+    if (Array.isArray(o.anomalies)) brief.anomalies = o.anomalies.filter((x) => typeof x === 'string') as string[];
+    if (Array.isArray(o.pistes)) brief.pistes = o.pistes.filter((x) => typeof x === 'string') as string[];
+    out.push(brief);
+  }
+  return out;
+}
+
+function parseAgentJson(result: string): {
+  answer: string;
+  sources: string[];
+  dossierBriefs?: AIQueryDossierBrief[];
+} {
   const cleaned = result.replace(/```json?\n?/gi, '').replace(/```/g, '').trim();
-  const parsed = JSON.parse(cleaned) as { answer?: string; sources?: unknown };
+  const parsed = JSON.parse(cleaned) as { answer?: string; sources?: unknown; dossierBriefs?: unknown };
+  const dossierBriefs = normalizeDossierBriefs(parsed.dossierBriefs);
   return {
     answer: typeof parsed.answer === 'string' ? parsed.answer : '',
     sources: normalizeSourceIds(parsed.sources),
+    ...(dossierBriefs !== undefined ? { dossierBriefs } : {}),
   };
 }
 
@@ -163,6 +208,7 @@ ${allRapp
       `- ID: ${r.id} | Mouvement: ${r.mouvementId} | Factures: ${(r.factureIds as string[])?.join(', ')} | Écart: ${r.ecart} | Status: ${r.status}`
   )
   .join('\n')}
+${buildDossierDigestBlock(docById, rappById)}
 `;
 
   return { context, docById, mouvById, rappById };
@@ -286,6 +332,7 @@ export async function queryData(
   sessionId: string;
   timelineEvents?: Record<string, unknown>[];
   timelineMeta?: AIQueryTimelineMeta;
+  dossierBriefs?: AIQueryDossierBrief[];
 }> {
   const { context, docById, mouvById, rappById } = await loadDataset();
   const llmStored = await getLlmHistory(sessionId);
@@ -293,7 +340,7 @@ export async function queryData(
   const userMessage = buildDataUserMessage(context, userQuery);
 
   const raw = await callAgentWithHistory(QUERY_SYSTEM, historyForApi, userMessage);
-  let parsed: { answer: string; sources: string[] };
+  let parsed: { answer: string; sources: string[]; dossierBriefs?: AIQueryDossierBrief[] };
   try {
     parsed = parseAgentJson(raw);
   } catch {
@@ -306,6 +353,8 @@ export async function queryData(
 
   await appendLlmTurns(sessionId, userQuery, parsed.answer);
 
+  const briefs = parsed.dossierBriefs;
+
   const turn: StoredChatTurn = {
     question: userQuery,
     answer: parsed.answer,
@@ -314,6 +363,7 @@ export async function queryData(
     ...(timelinePayload
       ? { timelineEvents: timelinePayload.events, timelineMeta: timelinePayload.meta }
       : {}),
+    ...(briefs && briefs.length ? { dossierBriefs: briefs } : {}),
   };
   await appendTurn(sessionId, turn);
 
@@ -324,5 +374,6 @@ export async function queryData(
     ...(timelinePayload
       ? { timelineEvents: timelinePayload.events, timelineMeta: timelinePayload.meta }
       : {}),
+    ...(briefs && briefs.length ? { dossierBriefs: briefs } : {}),
   };
 }

@@ -132,12 +132,28 @@ export interface AIQueryTimelineMeta {
   purchaseLabel?: string;
 }
 
+/** Réponse structurée optionnelle quand la question porte sur un dossier / parcours d’achat. */
+export interface AIQueryDossierBrief {
+  scenarioId?: string | null;
+  /** Fournisseur ou intitulé court */
+  libelle?: string;
+  /** Synthèse en 2–5 phrases */
+  resume: string;
+  /** Étapes ou pièces clés dans l’ordre */
+  etapes?: string[];
+  /** Incohérences, écarts, pièces manquantes, alertes */
+  anomalies?: string[];
+  /** Pistes : prochaines actions, contrôles complémentaires */
+  pistes?: string[];
+}
+
 export interface AIQueryResponse {
   answer: string;
   sources: AIQuerySourceRef[];
   sessionId: string;
   timelineEvents?: Record<string, unknown>[];
   timelineMeta?: AIQueryTimelineMeta;
+  dossierBriefs?: AIQueryDossierBrief[];
 }
 
 export interface AIQueryHistoryResponse {
@@ -152,6 +168,7 @@ export interface AIQueryHistoryTurn {
   at: string;
   timelineEvents?: Record<string, unknown>[];
   timelineMeta?: AIQueryTimelineMeta;
+  dossierBriefs?: AIQueryDossierBrief[];
 }
 
 export type DocumentType = 'devis' | 'bon_commande' | 'bon_livraison' | 'bon_reception' | 'facture' | 'mouvement' | 'email';

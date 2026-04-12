@@ -25,6 +25,9 @@ router.get('/history/:sessionId', async (req: Request, res: Response) => {
             timelineMeta: t.timelineMeta,
           }
         : {}),
+      ...(Array.isArray(t.dossierBriefs) && t.dossierBriefs.length
+        ? { dossierBriefs: t.dossierBriefs as AIQueryHistoryTurn['dossierBriefs'] }
+        : {}),
     }));
     const body: AIQueryHistoryResponse = { sessionId, turns };
     res.json(body);

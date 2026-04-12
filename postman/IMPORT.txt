@@ -15,4 +15,6 @@ Variables d'environnement (onglet Environments ou icône œil) :
   scenarioId     — ex. S01
   rapprochementId — id depuis GET /api/rapprochement
 
+Import CSV et upload batch PDF : fichiers uniquement en form-data (**file** / **files**). La progression temps réel est émise en **broadcast** à tous les onglets connectés en Socket.io (plus besoin de `socketId`).
+
 CORS : le serveur autorise l'origine http://localhost:4200. Les appels depuis Postman ne passent pas par CORS navigateur, pas de souci.
