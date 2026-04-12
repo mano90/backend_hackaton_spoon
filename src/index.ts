@@ -44,10 +44,10 @@ attachRealtime(httpServer);
 httpServer.listen(PORT, async () => {
   console.log(`[Server] Running on http://localhost:${PORT}`);
 
-  // try {
-  //   const { seed } = await import('./seed');
-  //   await seed();
-  // } catch (err) {
-  //   console.error('[Seed] Failed:', err);
-  // }
+  try {
+    const { seed } = await import('./seed');
+    await seed();
+  } catch (err) {
+    console.error('[Seed] Failed:', err);
+  }
 });
