@@ -1,0 +1,5 @@
+Date;Montant;Libellé;Reference
+15/01/2026;-33,33;Format JJ/MM/AAAA;EDGE-1
+2026-01-20;-44,44;Format ISO;EDGE-2
+20.02.2026;55,55;Format JJ.MM.AAAA;EDGE-3
+01/03/26;-66,66;Année sur 2 chiffres;EDGE-4

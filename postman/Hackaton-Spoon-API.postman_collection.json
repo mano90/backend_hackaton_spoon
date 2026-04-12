@@ -1,0 +1,346 @@
+{
+  "info": {
+    "name": "Hackaton Spoon API",
+    "description": "Backend Express — import CSV mouvements, documents PDF, query IA, timeline, rapprochement.\n\nVariables : utiliser l'environnement **Local** (`baseUrl`, `sessionId`, etc.).\n\nFichiers de test : `test-data/mouvements-import/`, `test-data/anomalies/`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" }
+  ],
+  "item": [
+    {
+      "name": "Système",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/health",
+            "description": "Vérifie que le serveur répond."
+          }
+        },
+        {
+          "name": "Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/stats",
+            "description": "Compteurs factures, documents, mouvements, rapprochements."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mouvements",
+      "item": [
+        {
+          "name": "Liste tous les mouvements",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/mouvements"
+          }
+        },
+        {
+          "name": "Créer un mouvement (JSON)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"montant\": 150.25,\n  \"date\": \"2026-04-12\",\n  \"libelle\": \"Test Postman\",\n  \"type_mouvement\": \"sortie\",\n  \"reference\": \"POSTMAN-001\"\n}"
+            },
+            "url": "{{baseUrl}}/api/mouvements"
+          }
+        },
+        {
+          "name": "Import CSV (fichier)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "description": "Fichier .csv ou .txt UTF-8 — ex. test-data/mouvements-import/releve-fr-semicolon.csv ou test-data/anomalies/mouvements-stress.csv",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/mouvements/import-csv",
+            "description": "Multipart : champ **file** uniquement. Taille max 5 Mo."
+          }
+        },
+        {
+          "name": "Bulk JSON (tableau)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"montant\": 100,\n    \"date\": \"2026-04-12\",\n    \"libelle\": \"Bulk 1\",\n    \"type_mouvement\": \"entree\",\n    \"reference\": \"BULK-A\"\n  },\n  {\n    \"montant\": 50,\n    \"date\": \"2026-04-12\",\n    \"libelle\": \"Bulk 2\",\n    \"type_mouvement\": \"sortie\",\n    \"reference\": \"BULK-B\"\n  }\n]"
+            },
+            "url": "{{baseUrl}}/api/mouvements/bulk",
+            "description": "Corps = tableau JSON. Fichier exemple : test-data/anomalies/mouvements-bulk-large.json"
+          }
+        },
+        {
+          "name": "Supprimer un mouvement",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/mouvements/{{mouvementId}}",
+            "description": "Renseigner la variable d'environnement `mouvementId` (copier depuis la liste GET)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Documents",
+      "item": [
+        {
+          "name": "Liste documents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/documents",
+            "description": "Optionnel : `?type=facture` pour filtrer."
+          }
+        },
+        {
+          "name": "Liste documents (type=facture)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/documents?type=facture"
+          }
+        },
+        {
+          "name": "Upload PDF (un fichier)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "description": "Un PDF — seed-documents/... après génération locale",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "docType",
+                  "value": "",
+                  "description": "Optionnel : forcer un type (si supporté par l'ingestion)",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/documents/upload"
+          }
+        },
+        {
+          "name": "Upload batch PDF (plusieurs fichiers)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "description": "Ajouter plusieurs lignes avec la même clé **files** dans Postman pour plusieurs PDF",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/documents/upload-batch"
+          }
+        },
+        {
+          "name": "Upload image (test rejet)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "description": "test-data/anomalies/images/pixel-1x1.png — attendu : erreur / pas PDF",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/documents/upload"
+          }
+        },
+        {
+          "name": "Détail document",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/documents/{{documentId}}"
+          }
+        },
+        {
+          "name": "PDF document",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/documents/{{documentId}}/pdf",
+            "description": "Réponse binaire PDF."
+          }
+        },
+        {
+          "name": "Confirmer document pending",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"docType\": \"facture\"\n}"
+            },
+            "url": "{{baseUrl}}/api/documents/confirm/{{pendingId}}"
+          }
+        },
+        {
+          "name": "Annuler pending",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/documents/pending/{{pendingId}}"
+          }
+        },
+        {
+          "name": "Supprimer document",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/documents/{{documentId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Query IA",
+      "item": [
+        {
+          "name": "Question (chat)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"Liste les factures du premier trimestre 2026\",\n  \"sessionId\": \"{{sessionId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/query",
+            "description": "Si sessionId vide, le serveur en crée une. Réutiliser la même valeur pour l'historique."
+          }
+        },
+        {
+          "name": "Historique session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/query/history/{{sessionId}}"
+          }
+        },
+        {
+          "name": "Reset session IA",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/query/reset",
+            "description": "Réponse 204 No Content si OK."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Timeline",
+      "item": [
+        {
+          "name": "Frise globale",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/timeline"
+          }
+        },
+        {
+          "name": "Frise par scénario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/timeline/scenario/{{scenarioId}}",
+            "description": "Ex. scenarioId=S01 après seed."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rapprochement",
+      "item": [
+        {
+          "name": "IDs mouvements sortie",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/rapprochement/sortie-ids"
+          }
+        },
+        {
+          "name": "Lancer rapprochement (un mouvement)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/rapprochement/run/{{mouvementId}}"
+          }
+        },
+        {
+          "name": "Lancer rapprochement (tous les sorties)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/rapprochement/run-all"
+          }
+        },
+        {
+          "name": "Liste rapprochements",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/rapprochement"
+          }
+        },
+        {
+          "name": "Confirmer rapprochement",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/rapprochement/confirm/{{rapprochementId}}"
+          }
+        },
+        {
+          "name": "Supprimer rapprochement",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/rapprochement/{{rapprochementId}}"
+          }
+        }
+      ]
+    }
+  ]
+}

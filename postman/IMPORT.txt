@@ -1,0 +1,18 @@
+Postman — importer la collection
+==================================
+
+1. Ouvrir Postman → Import → fichier `Hackaton-Spoon-API.postman_collection.json`
+2. Import → fichier `Local.postman_environment.json`
+3. En haut à droite, sélectionner l'environnement **Hackaton Spoon — local**
+4. Démarrer le backend : `npm run dev` (port 3000 par défaut)
+5. Requêtes avec fichier : **Import CSV**, **Upload PDF** → onglet Body → form-data → clé `file` ou `files` → Select File (choisir un fichier dans test-data/mouvements-import/ ou test-data/anomalies/)
+
+Variables d'environnement (onglet Environments ou icône œil) :
+  sessionId      — coller l'UUID renvoyé par POST /api/query après une question
+  mouvementId    — id depuis GET /api/mouvements
+  documentId     — id depuis GET /api/documents
+  pendingId      — id pending si classification en attente
+  scenarioId     — ex. S01
+  rapprochementId — id depuis GET /api/rapprochement
+
+CORS : le serveur autorise l'origine http://localhost:4200. Les appels depuis Postman ne passent pas par CORS navigateur, pas de souci.

@@ -1,0 +1,421 @@
+Date,Montant,Libelle,Reference,Type
+2026-03-01,-100.00,Label 0,R-C-0000,sortie
+,,Incomplete row 1,,
+,,Incomplete row 2,,
+,,Incomplete row 3,,
+2026-03-05,104.00,Label 4,R-C-0004,entree
+2026-03-06,105.00,Label 5,R-C-0005,entree
+2026-03-07,-106.00,Label 6,R-C-0006,sortie
+2026-03-01,"-17,50",Virgule dans montant FR,RC-7,sortie
+2026-03-09,-108.00,Label 8,R-C-0008,sortie
+,,Incomplete row 9,,
+2026-03-11,-110.00,Label 10,R-C-0010,sortie
+2026-03-12,-111.00,Label 11,R-C-0011,sortie
+2026-03-13,112.00,Label 12,R-C-0012,entree
+2026-03-14,113.00,Label 13,R-C-0013,entree
+2026-03-15,114.00,Label 14,R-C-0014,entree
+2026-03-16,-115.00,Label 15,R-C-0015,sortie
+2026-03-17,116.00,Label 16,R-C-0016,entree
+2026-03-18,117.00,Label 17,R-C-0017,entree
+2026-03-19,-118.00,Label 18,R-C-0018,sortie
+2026-03-01,"-119,50",Virgule dans montant FR,RC-19,sortie
+2026-03-01,"-120,50",Virgule dans montant FR,RC-20,sortie
+2026-03-01,"-121,50",Virgule dans montant FR,RC-21,sortie
+2026-03-23,-122.00,Label 22,R-C-0022,sortie
+,,Incomplete row 23,,
+2026-03-25,-124.00,Label 24,R-C-0024,sortie
+2026-03-26,125.00,Label 25,R-C-0025,entree
+,,Incomplete row 26,,
+2026-03-28,127.00,Label 27,R-C-0027,entree
+2026-03-01,"-128,50",Virgule dans montant FR,RC-28,sortie
+2026-03-30,129.00,Label 29,R-C-0029,entree
+2026-03-01,"-130,50",Virgule dans montant FR,RC-30,sortie
+2026-03-01,"-131,50",Virgule dans montant FR,RC-31,sortie
+2026-04-02,132.00,Label 32,R-C-0032,entree
+2026-03-01,"-133,50",Virgule dans montant FR,RC-33,sortie
+2026-04-04,-134.00,Label 34,R-C-0034,sortie
+2026-04-05,-135.00,Label 35,R-C-0035,sortie
+,,Incomplete row 36,,
+2026-04-07,-137.00,Label 37,R-C-0037,sortie
+2026-04-08,-138.00,Label 38,R-C-0038,sortie
+2026-04-09,139.00,Label 39,R-C-0039,entree
+2026-04-10,-140.00,Label 40,R-C-0040,sortie
+,,Incomplete row 41,,
+2026-04-12,142.00,Label 42,R-C-0042,entree
+2026-04-13,143.00,Label 43,R-C-0043,entree
+2026-04-14,144.00,Label 44,R-C-0044,entree
+2026-04-15,145.00,Label 45,R-C-0045,entree
+2026-04-16,146.00,Label 46,R-C-0046,entree
+2026-04-17,-147.00,Label 47,R-C-0047,sortie
+2026-04-18,148.00,Label 48,R-C-0048,entree
+2026-04-19,-149.00,Label 49,R-C-0049,sortie
+2026-03-01,"-150,50",Virgule dans montant FR,RC-50,sortie
+2026-04-21,151.00,Label 51,R-C-0051,entree
+2026-04-22,152.00,Label 52,R-C-0052,entree
+2026-03-01,"-153,50",Virgule dans montant FR,RC-53,sortie
+2026-04-24,-154.00,Label 54,R-C-0054,sortie
+2026-04-25,155.00,Label 55,R-C-0055,entree
+2026-04-26,-156.00,Label 56,R-C-0056,sortie
+2026-04-27,157.00,Label 57,R-C-0057,entree
+2026-04-28,-158.00,Label 58,R-C-0058,sortie
+2026-04-29,-159.00,Label 59,R-C-0059,sortie
+2026-04-30,160.00,Label 60,R-C-0060,entree
+2026-03-01,"-161,50",Virgule dans montant FR,RC-61,sortie
+2026-05-02,162.00,Label 62,R-C-0062,entree
+2026-05-03,-163.00,Label 63,R-C-0063,sortie
+2026-05-04,-164.00,Label 64,R-C-0064,sortie
+2026-05-05,-165.00,Label 65,R-C-0065,sortie
+2026-05-06,166.00,Label 66,R-C-0066,entree
+2026-05-07,-167.00,Label 67,R-C-0067,sortie
+,,Incomplete row 68,,
+2026-05-09,-169.00,Label 69,R-C-0069,sortie
+2026-05-10,-170.00,Label 70,R-C-0070,sortie
+2026-05-11,-171.00,Label 71,R-C-0071,sortie
+,,Incomplete row 72,,
+2026-05-13,173.00,Label 73,R-C-0073,entree
+2026-03-01,"-174,50",Virgule dans montant FR,RC-74,sortie
+2026-05-15,175.00,Label 75,R-C-0075,entree
+2026-03-01,"-176,50",Virgule dans montant FR,RC-76,sortie
+2026-05-17,-177.00,Label 77,R-C-0077,sortie
+2026-03-01,"-178,50",Virgule dans montant FR,RC-78,sortie
+,,Incomplete row 79,,
+2026-03-01,"-180,50",Virgule dans montant FR,RC-80,sortie
+2026-05-21,-181.00,Label 81,R-C-0081,sortie
+2026-05-22,-182.00,Label 82,R-C-0082,sortie
+2026-03-01,"-183,50",Virgule dans montant FR,RC-83,sortie
+2026-05-24,184.00,Label 84,R-C-0084,entree
+2026-05-25,-185.00,Label 85,R-C-0085,sortie
+2026-05-26,186.00,Label 86,R-C-0086,entree
+2026-05-27,-187.00,Label 87,R-C-0087,sortie
+2026-05-28,-188.00,Label 88,R-C-0088,sortie
+2026-03-01,"-189,50",Virgule dans montant FR,RC-89,sortie
+2026-05-30,-190.00,Label 90,R-C-0090,sortie
+2026-05-31,191.00,Label 91,R-C-0091,entree
+2026-06-01,192.00,Label 92,R-C-0092,entree
+,,Incomplete row 93,,
+,,Incomplete row 94,,
+2026-06-04,-195.00,Label 95,R-C-0095,sortie
+2026-06-05,-196.00,Label 96,R-C-0096,sortie
+2026-06-06,-197.00,Label 97,R-C-0097,sortie
+2026-06-07,198.00,Label 98,R-C-0098,entree
+2026-06-08,199.00,Label 99,R-C-0099,entree
+2026-03-01,-200.00,Label 100,R-C-0100,sortie
+2026-03-01,"-1101,50",Virgule dans montant FR,RC-101,sortie
+2026-03-03,202.00,Label 102,R-C-0102,entree
+2026-03-04,-203.00,Label 103,R-C-0103,sortie
+2026-03-05,-204.00,Label 104,R-C-0104,sortie
+2026-03-06,205.00,Label 105,R-C-0105,entree
+2026-03-07,206.00,Label 106,R-C-0106,entree
+,,Incomplete row 107,,
+2026-03-09,208.00,Label 108,R-C-0108,entree
+2026-03-10,-209.00,Label 109,R-C-0109,sortie
+2026-03-11,-210.00,Label 110,R-C-0110,sortie
+,,Incomplete row 111,,
+2026-03-13,212.00,Label 112,R-C-0112,entree
+2026-03-14,213.00,Label 113,R-C-0113,entree
+2026-03-15,-214.00,Label 114,R-C-0114,sortie
+2026-03-16,215.00,Label 115,R-C-0115,entree
+2026-03-17,-216.00,Label 116,R-C-0116,sortie
+2026-03-18,-217.00,Label 117,R-C-0117,sortie
+2026-03-19,218.00,Label 118,R-C-0118,entree
+2026-03-20,-219.00,Label 119,R-C-0119,sortie
+2026-03-21,-220.00,Label 120,R-C-0120,sortie
+2026-03-01,"-1121,50",Virgule dans montant FR,RC-121,sortie
+2026-03-23,-222.00,Label 122,R-C-0122,sortie
+2026-03-01,"-1123,50",Virgule dans montant FR,RC-123,sortie
+2026-03-25,224.00,Label 124,R-C-0124,entree
+2026-03-01,"-1125,50",Virgule dans montant FR,RC-125,sortie
+2026-03-01,"-1126,50",Virgule dans montant FR,RC-126,sortie
+2026-03-01,"-1127,50",Virgule dans montant FR,RC-127,sortie
+2026-03-29,228.00,Label 128,R-C-0128,entree
+2026-03-30,229.00,Label 129,R-C-0129,entree
+2026-03-31,-230.00,Label 130,R-C-0130,sortie
+2026-04-01,231.00,Label 131,R-C-0131,entree
+2026-04-02,232.00,Label 132,R-C-0132,entree
+,,Incomplete row 133,,
+2026-04-04,234.00,Label 134,R-C-0134,entree
+2026-04-05,-235.00,Label 135,R-C-0135,sortie
+2026-03-01,"-1136,50",Virgule dans montant FR,RC-136,sortie
+2026-04-07,237.00,Label 137,R-C-0137,entree
+2026-03-01,"-1138,50",Virgule dans montant FR,RC-138,sortie
+2026-04-09,239.00,Label 139,R-C-0139,entree
+2026-04-10,-240.00,Label 140,R-C-0140,sortie
+2026-04-11,-241.00,Label 141,R-C-0141,sortie
+2026-04-12,-242.00,Label 142,R-C-0142,sortie
+2026-04-13,-243.00,Label 143,R-C-0143,sortie
+2026-04-14,244.00,Label 144,R-C-0144,entree
+2026-04-15,245.00,Label 145,R-C-0145,entree
+2026-04-16,-246.00,Label 146,R-C-0146,sortie
+,,Incomplete row 147,,
+,,Incomplete row 148,,
+2026-04-19,-249.00,Label 149,R-C-0149,sortie
+2026-03-01,"-1150,50",Virgule dans montant FR,RC-150,sortie
+2026-03-01,"-1151,50",Virgule dans montant FR,RC-151,sortie
+2026-04-22,-252.00,Label 152,R-C-0152,sortie
+2026-04-23,253.00,Label 153,R-C-0153,entree
+2026-04-24,254.00,Label 154,R-C-0154,entree
+2026-04-25,255.00,Label 155,R-C-0155,entree
+,,Incomplete row 156,,
+2026-04-27,-257.00,Label 157,R-C-0157,sortie
+2026-04-28,258.00,Label 158,R-C-0158,entree
+2026-04-29,259.00,Label 159,R-C-0159,entree
+2026-03-01,"-1160,50",Virgule dans montant FR,RC-160,sortie
+2026-03-01,"-1161,50",Virgule dans montant FR,RC-161,sortie
+2026-05-02,262.00,Label 162,R-C-0162,entree
+2026-05-03,-263.00,Label 163,R-C-0163,sortie
+2026-05-04,-264.00,Label 164,R-C-0164,sortie
+2026-05-05,265.00,Label 165,R-C-0165,entree
+2026-05-06,-266.00,Label 166,R-C-0166,sortie
+2026-03-01,"-1167,50",Virgule dans montant FR,RC-167,sortie
+2026-05-08,-268.00,Label 168,R-C-0168,sortie
+2026-05-09,269.00,Label 169,R-C-0169,entree
+2026-05-10,270.00,Label 170,R-C-0170,entree
+,,Incomplete row 171,,
+2026-05-12,-272.00,Label 172,R-C-0172,sortie
+2026-03-01,"-1173,50",Virgule dans montant FR,RC-173,sortie
+2026-03-01,"-1174,50",Virgule dans montant FR,RC-174,sortie
+2026-05-15,275.00,Label 175,R-C-0175,entree
+2026-05-16,-276.00,Label 176,R-C-0176,sortie
+2026-05-17,-277.00,Label 177,R-C-0177,sortie
+2026-03-01,"-1178,50",Virgule dans montant FR,RC-178,sortie
+2026-05-19,-279.00,Label 179,R-C-0179,sortie
+2026-05-20,280.00,Label 180,R-C-0180,entree
+2026-05-21,281.00,Label 181,R-C-0181,entree
+2026-03-01,"-1182,50",Virgule dans montant FR,RC-182,sortie
+2026-05-23,283.00,Label 183,R-C-0183,entree
+2026-05-24,284.00,Label 184,R-C-0184,entree
+2026-05-25,-285.00,Label 185,R-C-0185,sortie
+,,Incomplete row 186,,
+2026-05-27,-287.00,Label 187,R-C-0187,sortie
+2026-05-28,288.00,Label 188,R-C-0188,entree
+2026-03-01,"-1189,50",Virgule dans montant FR,RC-189,sortie
+2026-05-30,-290.00,Label 190,R-C-0190,sortie
+2026-05-31,-291.00,Label 191,R-C-0191,sortie
+2026-06-01,292.00,Label 192,R-C-0192,entree
+2026-06-02,-293.00,Label 193,R-C-0193,sortie
+,,Incomplete row 194,,
+,,Incomplete row 195,,
+2026-03-01,"-1196,50",Virgule dans montant FR,RC-196,sortie
+2026-03-01,"-1197,50",Virgule dans montant FR,RC-197,sortie
+,,Incomplete row 198,,
+2026-06-08,-299.00,Label 199,R-C-0199,sortie
+2026-03-01,300.00,Label 200,R-C-0200,entree
+2026-03-01,"-1201,50",Virgule dans montant FR,RC-201,sortie
+2026-03-03,302.00,Label 202,R-C-0202,entree
+2026-03-04,303.00,Label 203,R-C-0203,entree
+2026-03-05,-304.00,Label 204,R-C-0204,sortie
+2026-03-06,305.00,Label 205,R-C-0205,entree
+2026-03-07,-306.00,Label 206,R-C-0206,sortie
+,,Incomplete row 207,,
+2026-03-09,-308.00,Label 208,R-C-0208,sortie
+2026-03-10,-309.00,Label 209,R-C-0209,sortie
+2026-03-01,"-1210,50",Virgule dans montant FR,RC-210,sortie
+2026-03-12,-311.00,Label 211,R-C-0211,sortie
+2026-03-13,-312.00,Label 212,R-C-0212,sortie
+2026-03-14,313.00,Label 213,R-C-0213,entree
+2026-03-15,-314.00,Label 214,R-C-0214,sortie
+2026-03-01,"-1215,50",Virgule dans montant FR,RC-215,sortie
+2026-03-17,-316.00,Label 216,R-C-0216,sortie
+2026-03-18,-317.00,Label 217,R-C-0217,sortie
+,,Incomplete row 218,,
+2026-03-20,319.00,Label 219,R-C-0219,entree
+2026-03-21,-320.00,Label 220,R-C-0220,sortie
+2026-03-22,-321.00,Label 221,R-C-0221,sortie
+2026-03-23,322.00,Label 222,R-C-0222,entree
+2026-03-24,-323.00,Label 223,R-C-0223,sortie
+2026-03-25,324.00,Label 224,R-C-0224,entree
+2026-03-26,325.00,Label 225,R-C-0225,entree
+2026-03-27,326.00,Label 226,R-C-0226,entree
+2026-03-28,327.00,Label 227,R-C-0227,entree
+,,Incomplete row 228,,
+2026-03-30,329.00,Label 229,R-C-0229,entree
+2026-03-31,330.00,Label 230,R-C-0230,entree
+2026-04-01,-331.00,Label 231,R-C-0231,sortie
+2026-03-01,"-1232,50",Virgule dans montant FR,RC-232,sortie
+2026-04-03,333.00,Label 233,R-C-0233,entree
+2026-04-04,334.00,Label 234,R-C-0234,entree
+2026-03-01,"-1235,50",Virgule dans montant FR,RC-235,sortie
+2026-04-06,-336.00,Label 236,R-C-0236,sortie
+2026-04-07,-337.00,Label 237,R-C-0237,sortie
+2026-04-08,-338.00,Label 238,R-C-0238,sortie
+2026-04-09,339.00,Label 239,R-C-0239,entree
+2026-03-01,"-1240,50",Virgule dans montant FR,RC-240,sortie
+2026-03-01,"-1241,50",Virgule dans montant FR,RC-241,sortie
+2026-04-12,342.00,Label 242,R-C-0242,entree
+2026-04-13,-343.00,Label 243,R-C-0243,sortie
+2026-03-01,"-1244,50",Virgule dans montant FR,RC-244,sortie
+2026-04-15,345.00,Label 245,R-C-0245,entree
+2026-04-16,346.00,Label 246,R-C-0246,entree
+2026-03-01,"-1247,50",Virgule dans montant FR,RC-247,sortie
+2026-04-18,348.00,Label 248,R-C-0248,entree
+2026-04-19,-349.00,Label 249,R-C-0249,sortie
+2026-04-20,-350.00,Label 250,R-C-0250,sortie
+2026-04-21,351.00,Label 251,R-C-0251,entree
+2026-04-22,-352.00,Label 252,R-C-0252,sortie
+2026-04-23,353.00,Label 253,R-C-0253,entree
+2026-03-01,"-1254,50",Virgule dans montant FR,RC-254,sortie
+2026-03-01,"-1255,50",Virgule dans montant FR,RC-255,sortie
+2026-04-26,356.00,Label 256,R-C-0256,entree
+2026-04-27,-357.00,Label 257,R-C-0257,sortie
+,,Incomplete row 258,,
+2026-04-29,359.00,Label 259,R-C-0259,entree
+2026-04-30,360.00,Label 260,R-C-0260,entree
+2026-03-01,"-1261,50",Virgule dans montant FR,RC-261,sortie
+2026-05-02,-362.00,Label 262,R-C-0262,sortie
+,,Incomplete row 263,,
+2026-05-04,-364.00,Label 264,R-C-0264,sortie
+2026-05-05,-365.00,Label 265,R-C-0265,sortie
+2026-05-06,-366.00,Label 266,R-C-0266,sortie
+2026-03-01,"-1267,50",Virgule dans montant FR,RC-267,sortie
+2026-05-08,-368.00,Label 268,R-C-0268,sortie
+2026-05-09,369.00,Label 269,R-C-0269,entree
+2026-05-10,370.00,Label 270,R-C-0270,entree
+2026-03-01,"-1271,50",Virgule dans montant FR,RC-271,sortie
+2026-05-12,372.00,Label 272,R-C-0272,entree
+2026-05-13,-373.00,Label 273,R-C-0273,sortie
+2026-05-14,374.00,Label 274,R-C-0274,entree
+2026-05-15,-375.00,Label 275,R-C-0275,sortie
+2026-05-16,-376.00,Label 276,R-C-0276,sortie
+2026-05-17,-377.00,Label 277,R-C-0277,sortie
+2026-05-18,378.00,Label 278,R-C-0278,entree
+2026-03-01,"-1279,50",Virgule dans montant FR,RC-279,sortie
+2026-05-20,380.00,Label 280,R-C-0280,entree
+2026-05-21,-381.00,Label 281,R-C-0281,sortie
+2026-05-22,-382.00,Label 282,R-C-0282,sortie
+2026-05-23,-383.00,Label 283,R-C-0283,sortie
+2026-05-24,-384.00,Label 284,R-C-0284,sortie
+,,Incomplete row 285,,
+2026-05-26,-386.00,Label 286,R-C-0286,sortie
+2026-05-27,-387.00,Label 287,R-C-0287,sortie
+,,Incomplete row 288,,
+2026-03-01,"-1289,50",Virgule dans montant FR,RC-289,sortie
+2026-05-30,390.00,Label 290,R-C-0290,entree
+2026-05-31,-391.00,Label 291,R-C-0291,sortie
+2026-06-01,-392.00,Label 292,R-C-0292,sortie
+2026-06-02,-393.00,Label 293,R-C-0293,sortie
+2026-06-03,-394.00,Label 294,R-C-0294,sortie
+,,Incomplete row 295,,
+,,Incomplete row 296,,
+2026-06-06,-397.00,Label 297,R-C-0297,sortie
+2026-06-07,-398.00,Label 298,R-C-0298,sortie
+2026-03-01,"-1299,50",Virgule dans montant FR,RC-299,sortie
+2026-03-01,400.00,Label 300,R-C-0300,entree
+2026-03-01,"-1301,50",Virgule dans montant FR,RC-301,sortie
+2026-03-03,-402.00,Label 302,R-C-0302,sortie
+2026-03-04,-403.00,Label 303,R-C-0303,sortie
+2026-03-01,"-1304,50",Virgule dans montant FR,RC-304,sortie
+2026-03-06,-405.00,Label 305,R-C-0305,sortie
+2026-03-07,406.00,Label 306,R-C-0306,entree
+2026-03-08,407.00,Label 307,R-C-0307,entree
+2026-03-09,-408.00,Label 308,R-C-0308,sortie
+2026-03-01,"-1309,50",Virgule dans montant FR,RC-309,sortie
+2026-03-01,"-1310,50",Virgule dans montant FR,RC-310,sortie
+,,Incomplete row 311,,
+2026-03-13,-412.00,Label 312,R-C-0312,sortie
+2026-03-14,-413.00,Label 313,R-C-0313,sortie
+2026-03-15,414.00,Label 314,R-C-0314,entree
+2026-03-16,415.00,Label 315,R-C-0315,entree
+2026-03-17,-416.00,Label 316,R-C-0316,sortie
+2026-03-18,-417.00,Label 317,R-C-0317,sortie
+2026-03-19,418.00,Label 318,R-C-0318,entree
+2026-03-01,"-1319,50",Virgule dans montant FR,RC-319,sortie
+2026-03-21,420.00,Label 320,R-C-0320,entree
+2026-03-22,421.00,Label 321,R-C-0321,entree
+2026-03-23,422.00,Label 322,R-C-0322,entree
+2026-03-24,-423.00,Label 323,R-C-0323,sortie
+2026-03-25,424.00,Label 324,R-C-0324,entree
+,,Incomplete row 325,,
+,,Incomplete row 326,,
+2026-03-01,"-1327,50",Virgule dans montant FR,RC-327,sortie
+2026-03-29,-428.00,Label 328,R-C-0328,sortie
+2026-03-30,-429.00,Label 329,R-C-0329,sortie
+2026-03-31,-430.00,Label 330,R-C-0330,sortie
+2026-04-01,-431.00,Label 331,R-C-0331,sortie
+2026-04-02,432.00,Label 332,R-C-0332,entree
+,,Incomplete row 333,,
+2026-04-04,434.00,Label 334,R-C-0334,entree
+2026-04-05,-435.00,Label 335,R-C-0335,sortie
+2026-04-06,-436.00,Label 336,R-C-0336,sortie
+,,Incomplete row 337,,
+,,Incomplete row 338,,
+2026-04-09,-439.00,Label 339,R-C-0339,sortie
+2026-04-10,-440.00,Label 340,R-C-0340,sortie
+2026-04-11,-441.00,Label 341,R-C-0341,sortie
+2026-04-12,442.00,Label 342,R-C-0342,entree
+2026-04-13,-443.00,Label 343,R-C-0343,sortie
+2026-03-01,"-1344,50",Virgule dans montant FR,RC-344,sortie
+2026-04-15,-445.00,Label 345,R-C-0345,sortie
+2026-04-16,-446.00,Label 346,R-C-0346,sortie
+2026-04-17,447.00,Label 347,R-C-0347,entree
+2026-04-18,448.00,Label 348,R-C-0348,entree
+2026-03-01,"-1349,50",Virgule dans montant FR,RC-349,sortie
+2026-04-20,-450.00,Label 350,R-C-0350,sortie
+2026-03-01,"-1351,50",Virgule dans montant FR,RC-351,sortie
+2026-03-01,"-1352,50",Virgule dans montant FR,RC-352,sortie
+2026-03-01,"-1353,50",Virgule dans montant FR,RC-353,sortie
+2026-04-24,454.00,Label 354,R-C-0354,entree
+2026-04-25,455.00,Label 355,R-C-0355,entree
+2026-04-26,456.00,Label 356,R-C-0356,entree
+,,Incomplete row 357,,
+2026-03-01,"-1358,50",Virgule dans montant FR,RC-358,sortie
+2026-04-29,-459.00,Label 359,R-C-0359,sortie
+2026-04-30,460.00,Label 360,R-C-0360,entree
+2026-05-01,-461.00,Label 361,R-C-0361,sortie
+2026-05-02,-462.00,Label 362,R-C-0362,sortie
+2026-05-03,-463.00,Label 363,R-C-0363,sortie
+2026-05-04,464.00,Label 364,R-C-0364,entree
+2026-05-05,465.00,Label 365,R-C-0365,entree
+2026-05-06,466.00,Label 366,R-C-0366,entree
+2026-05-07,-467.00,Label 367,R-C-0367,sortie
+2026-05-08,-468.00,Label 368,R-C-0368,sortie
+2026-05-09,-469.00,Label 369,R-C-0369,sortie
+2026-05-10,470.00,Label 370,R-C-0370,entree
+2026-05-11,-471.00,Label 371,R-C-0371,sortie
+2026-05-12,472.00,Label 372,R-C-0372,entree
+2026-05-13,473.00,Label 373,R-C-0373,entree
+2026-05-14,-474.00,Label 374,R-C-0374,sortie
+2026-05-15,-475.00,Label 375,R-C-0375,sortie
+2026-05-16,476.00,Label 376,R-C-0376,entree
+2026-03-01,"-1377,50",Virgule dans montant FR,RC-377,sortie
+2026-05-18,478.00,Label 378,R-C-0378,entree
+2026-05-19,-479.00,Label 379,R-C-0379,sortie
+2026-03-01,"-1380,50",Virgule dans montant FR,RC-380,sortie
+,,Incomplete row 381,,
+2026-05-22,-482.00,Label 382,R-C-0382,sortie
+2026-05-23,483.00,Label 383,R-C-0383,entree
+2026-05-24,-484.00,Label 384,R-C-0384,sortie
+2026-05-25,485.00,Label 385,R-C-0385,entree
+2026-05-26,-486.00,Label 386,R-C-0386,sortie
+2026-05-27,-487.00,Label 387,R-C-0387,sortie
+2026-05-28,488.00,Label 388,R-C-0388,entree
+2026-05-29,-489.00,Label 389,R-C-0389,sortie
+2026-05-30,-490.00,Label 390,R-C-0390,sortie
+2026-05-31,-491.00,Label 391,R-C-0391,sortie
+2026-03-01,"-1392,50",Virgule dans montant FR,RC-392,sortie
+2026-06-02,493.00,Label 393,R-C-0393,entree
+,,Incomplete row 394,,
+2026-06-04,495.00,Label 395,R-C-0395,entree
+2026-06-05,-496.00,Label 396,R-C-0396,sortie
+,,Incomplete row 397,,
+2026-06-07,498.00,Label 398,R-C-0398,entree
+2026-06-08,499.00,Label 399,R-C-0399,entree
+,,Incomplete row 400,,
+2026-03-02,-501.00,Label 401,R-C-0401,sortie
+2026-03-03,-502.00,Label 402,R-C-0402,sortie
+2026-03-04,-503.00,Label 403,R-C-0403,sortie
+2026-03-05,504.00,Label 404,R-C-0404,entree
+2026-03-06,505.00,Label 405,R-C-0405,entree
+2026-03-07,-506.00,Label 406,R-C-0406,sortie
+2026-03-08,-507.00,Label 407,R-C-0407,sortie
+2026-03-01,"-1408,50",Virgule dans montant FR,RC-408,sortie
+2026-03-01,"-1409,50",Virgule dans montant FR,RC-409,sortie
+2026-03-11,-510.00,Label 410,R-C-0410,sortie
+2026-03-12,-511.00,Label 411,R-C-0411,sortie
+2026-03-13,-512.00,Label 412,R-C-0412,sortie
+2026-03-14,-513.00,Label 413,R-C-0413,sortie
+2026-03-15,-514.00,Label 414,R-C-0414,sortie
+2026-03-16,-515.00,Label 415,R-C-0415,sortie
+,,Incomplete row 416,,
+2026-03-18,-517.00,Label 417,R-C-0417,sortie
+2026-03-01,"-1418,50",Virgule dans montant FR,RC-418,sortie
+2026-03-20,-519.00,Label 419,R-C-0419,sortie

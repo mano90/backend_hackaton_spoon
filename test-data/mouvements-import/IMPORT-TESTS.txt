@@ -1,0 +1,27 @@
+Import mouvements — fichiers de test
+====================================
+
+POST /mouvements/import-csv  : multipart field "file", extensions .csv ou .txt uniquement.
+POST /mouvements/bulk         : body JSON = tableau (voir mouvements-bulk-sample.json)
+
+Fichiers CSV / TXT (UTF-8)
+--------------------------
+  releve-fr-comma.csv          virgule, montants avec point décimal
+  releve-fr-semicolon.csv      point-virgule, montants style FR (ex. -125,50)
+  statement-en-comma.csv       en-têtes anglais
+  statement-en-tab.txt         séparateur TAB
+  edge-dates-and-amounts.csv   plusieurs formats de date
+  with-bom-utf8.csv            BOM UTF-8 (comme Excel)
+
+JSON (bulk)
+-----------
+  mouvements-bulk-sample.json  -> POST /mouvements/bulk
+
+Jeux massifs + anomalies (voir test-data/anomalies/HOWTO.txt)
+---------------------------------------------------------------
+  npm run generate-test-data
+
+Excel
+-----
+  releve-sample.xlsx           ouvrir dans Excel puis Enregistrer sous → CSV UTF-8 pour import-csv
+  (régénérer: npm install xlsx && node test-data/mouvements-import/gen-xlsx.cjs depuis backend_hackaton_spoon)

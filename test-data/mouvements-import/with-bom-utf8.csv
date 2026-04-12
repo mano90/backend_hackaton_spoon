@@ -1,0 +1,3 @@
+Date;Montant;Libellé;Référence
+2026-05-01;-99,99;Test fichier avec BOM UTF-8 (Excel);BOM-TEST-01
+2026-05-02;450,00;Encaissement test BOM;BOM-TEST-02

@@ -1,0 +1,5 @@
+date	valuedate	amt	label	ref
+2026-04-02	2026-04-02	-42.30	Coffee shop POS	POS-402
+2026-04-05	2026-04-05	5000.00	Client payment batch A	BATCH-A-05
+2026-04-09	2026-04-09	-1500.00	Rent office April 2026	RENT-04-26
+2026-04-12	2026-04-12	-9.99	Streaming service	SUB-NET-12

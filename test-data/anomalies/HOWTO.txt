@@ -1,0 +1,33 @@
+Dossier test-data/anomalies — jeux de données lourds et cas limites
+====================================================================
+
+Régénérer tous les fichiers (CSV, JSON, images) :
+  npm run generate-test-data
+  (équivalent : node scripts/generate-anomaly-test-data.mjs)
+
+IMPORT CSV MOUVEMENTS (POST /mouvements/import-csv, champ "file")
+-----------------------------------------------------------------
+  mouvements-stress.csv           ~650 lignes, beaucoup de lignes valides + lignes volontairement illisibles
+  mouvements-stress-comma.csv     variante séparateur virgule
+  mouvements-parse-torture.csv    accent sur erreurs de parse (dates/montants)
+
+Réponse API typique : "warnings" / lignes ignorées avec messages "Ligne N: date ou montant illisible".
+
+BULK JSON (POST /mouvements/bulk, body = tableau JSON)
+------------------------------------------------------
+  mouvements-bulk-large.json      250 mouvements valides
+  mouvements-bulk-invalid-examples.json   exemples volontairement sales (tests erreurs — ne pas tout poster en prod)
+
+SCÉNARIOS MÉTIER (hors API directe — tests manuels, démo IA, documentation)
+----------------------------------------------------------------------------
+  scenarios-purchase-anomalies.json   chaînes devis/BC/BL/BR/facture/mouvement avec anomalies (dates incohérentes, montants, etc.)
+  scenarios-anomalies-summary.csv     même contenu résumé pour Excel
+  rapprochement-test-cases.json       cas de montants pour rapprochement
+  timeline-mock-events.json           événements fictifs pour stresser l’ordre / la frise
+
+IMAGES (tests upload documents — l’API attend du PDF)
+-----------------------------------------------------
+  images/pixel-1x1.png | .gif      envoi sur POST /documents/upload pour vérifier rejet / message d’erreur
+
+Les fichiers JSON de scénarios ne sont pas chargés automatiquement par le backend : à utiliser pour seeds manuels,
+tests d’intégration ou jeux de données pour l’assistant IA.

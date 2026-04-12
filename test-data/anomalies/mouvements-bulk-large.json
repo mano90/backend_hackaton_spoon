@@ -1,0 +1,1752 @@
+[
+  {
+    "montant": 50,
+    "date": "2026-01-01",
+    "libelle": "Opération bulk 0",
+    "type_mouvement": "entree",
+    "reference": "BULK-0000"
+  },
+  {
+    "montant": 50.25,
+    "date": "2026-02-02",
+    "libelle": "Opération bulk 1",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0001"
+  },
+  {
+    "montant": 50.5,
+    "date": "2026-03-03",
+    "libelle": "Opération bulk 2",
+    "type_mouvement": "entree",
+    "reference": "BULK-0002"
+  },
+  {
+    "montant": 50.75,
+    "date": "2026-04-04",
+    "libelle": "Opération bulk 3",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0003"
+  },
+  {
+    "montant": 51,
+    "date": "2026-05-05",
+    "libelle": "Opération bulk 4",
+    "type_mouvement": "entree",
+    "reference": "BULK-0004"
+  },
+  {
+    "montant": 51.25,
+    "date": "2026-06-06",
+    "libelle": "Opération bulk 5",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0005"
+  },
+  {
+    "montant": 51.5,
+    "date": "2026-07-07",
+    "libelle": "Opération bulk 6",
+    "type_mouvement": "entree",
+    "reference": "BULK-0006"
+  },
+  {
+    "montant": 51.75,
+    "date": "2026-08-08",
+    "libelle": "Opération bulk 7",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0007"
+  },
+  {
+    "montant": 52,
+    "date": "2026-09-09",
+    "libelle": "Opération bulk 8",
+    "type_mouvement": "entree",
+    "reference": "BULK-0008"
+  },
+  {
+    "montant": 52.25,
+    "date": "2026-10-10",
+    "libelle": "Opération bulk 9",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0009"
+  },
+  {
+    "montant": 52.5,
+    "date": "2026-11-11",
+    "libelle": "Opération bulk 10",
+    "type_mouvement": "entree",
+    "reference": "BULK-0010"
+  },
+  {
+    "montant": 52.75,
+    "date": "2026-01-12",
+    "libelle": "Opération bulk 11",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0011"
+  },
+  {
+    "montant": 53,
+    "date": "2026-02-13",
+    "libelle": "Opération bulk 12",
+    "type_mouvement": "entree",
+    "reference": "BULK-0012"
+  },
+  {
+    "montant": 53.25,
+    "date": "2026-03-14",
+    "libelle": "Opération bulk 13",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0013"
+  },
+  {
+    "montant": 53.5,
+    "date": "2026-04-15",
+    "libelle": "Opération bulk 14",
+    "type_mouvement": "entree",
+    "reference": "BULK-0014"
+  },
+  {
+    "montant": 53.75,
+    "date": "2026-05-16",
+    "libelle": "Opération bulk 15",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0015"
+  },
+  {
+    "montant": 54,
+    "date": "2026-06-17",
+    "libelle": "Opération bulk 16",
+    "type_mouvement": "entree",
+    "reference": "BULK-0016"
+  },
+  {
+    "montant": 54.25,
+    "date": "2026-07-18",
+    "libelle": "Opération bulk 17",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0017"
+  },
+  {
+    "montant": 54.5,
+    "date": "2026-08-19",
+    "libelle": "Opération bulk 18",
+    "type_mouvement": "entree",
+    "reference": "BULK-0018"
+  },
+  {
+    "montant": 54.75,
+    "date": "2026-09-20",
+    "libelle": "Opération bulk 19",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0019"
+  },
+  {
+    "montant": 55,
+    "date": "2026-10-21",
+    "libelle": "Opération bulk 20",
+    "type_mouvement": "entree",
+    "reference": "BULK-0020"
+  },
+  {
+    "montant": 55.25,
+    "date": "2026-11-22",
+    "libelle": "Opération bulk 21",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0021"
+  },
+  {
+    "montant": 55.5,
+    "date": "2026-01-23",
+    "libelle": "Opération bulk 22",
+    "type_mouvement": "entree",
+    "reference": "BULK-0022"
+  },
+  {
+    "montant": 55.75,
+    "date": "2026-02-24",
+    "libelle": "Opération bulk 23",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0023"
+  },
+  {
+    "montant": 56,
+    "date": "2026-03-25",
+    "libelle": "Opération bulk 24",
+    "type_mouvement": "entree",
+    "reference": "BULK-0024"
+  },
+  {
+    "montant": 56.25,
+    "date": "2026-04-26",
+    "libelle": "Opération bulk 25",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0025"
+  },
+  {
+    "montant": 56.5,
+    "date": "2026-05-27",
+    "libelle": "Opération bulk 26",
+    "type_mouvement": "entree",
+    "reference": "BULK-0026"
+  },
+  {
+    "montant": 56.75,
+    "date": "2026-06-01",
+    "libelle": "Opération bulk 27",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0027"
+  },
+  {
+    "montant": 57,
+    "date": "2026-07-02",
+    "libelle": "Opération bulk 28",
+    "type_mouvement": "entree",
+    "reference": "BULK-0028"
+  },
+  {
+    "montant": 57.25,
+    "date": "2026-08-03",
+    "libelle": "Opération bulk 29",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0029"
+  },
+  {
+    "montant": 57.5,
+    "date": "2026-09-04",
+    "libelle": "Opération bulk 30",
+    "type_mouvement": "entree",
+    "reference": "BULK-0030"
+  },
+  {
+    "montant": 57.75,
+    "date": "2026-10-05",
+    "libelle": "Opération bulk 31",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0031"
+  },
+  {
+    "montant": 58,
+    "date": "2026-11-06",
+    "libelle": "Opération bulk 32",
+    "type_mouvement": "entree",
+    "reference": "BULK-0032"
+  },
+  {
+    "montant": 58.25,
+    "date": "2026-01-07",
+    "libelle": "Opération bulk 33",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0033"
+  },
+  {
+    "montant": 58.5,
+    "date": "2026-02-08",
+    "libelle": "Opération bulk 34",
+    "type_mouvement": "entree",
+    "reference": "BULK-0034"
+  },
+  {
+    "montant": 58.75,
+    "date": "2026-03-09",
+    "libelle": "Opération bulk 35",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0035"
+  },
+  {
+    "montant": 59,
+    "date": "2026-04-10",
+    "libelle": "Opération bulk 36",
+    "type_mouvement": "entree",
+    "reference": "BULK-0036"
+  },
+  {
+    "montant": 59.25,
+    "date": "2026-05-11",
+    "libelle": "Opération bulk 37",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0037"
+  },
+  {
+    "montant": 59.5,
+    "date": "2026-06-12",
+    "libelle": "Opération bulk 38",
+    "type_mouvement": "entree",
+    "reference": "BULK-0038"
+  },
+  {
+    "montant": 59.75,
+    "date": "2026-07-13",
+    "libelle": "Opération bulk 39",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0039"
+  },
+  {
+    "montant": 60,
+    "date": "2026-08-14",
+    "libelle": "Opération bulk 40",
+    "type_mouvement": "entree",
+    "reference": "BULK-0040"
+  },
+  {
+    "montant": 60.25,
+    "date": "2026-09-15",
+    "libelle": "Opération bulk 41",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0041"
+  },
+  {
+    "montant": 60.5,
+    "date": "2026-10-16",
+    "libelle": "Opération bulk 42",
+    "type_mouvement": "entree",
+    "reference": "BULK-0042"
+  },
+  {
+    "montant": 60.75,
+    "date": "2026-11-17",
+    "libelle": "Opération bulk 43",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0043"
+  },
+  {
+    "montant": 61,
+    "date": "2026-01-18",
+    "libelle": "Opération bulk 44",
+    "type_mouvement": "entree",
+    "reference": "BULK-0044"
+  },
+  {
+    "montant": 61.25,
+    "date": "2026-02-19",
+    "libelle": "Opération bulk 45",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0045"
+  },
+  {
+    "montant": 61.5,
+    "date": "2026-03-20",
+    "libelle": "Opération bulk 46",
+    "type_mouvement": "entree",
+    "reference": "BULK-0046"
+  },
+  {
+    "montant": 61.75,
+    "date": "2026-04-21",
+    "libelle": "Opération bulk 47",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0047"
+  },
+  {
+    "montant": 62,
+    "date": "2026-05-22",
+    "libelle": "Opération bulk 48",
+    "type_mouvement": "entree",
+    "reference": "BULK-0048"
+  },
+  {
+    "montant": 62.25,
+    "date": "2026-06-23",
+    "libelle": "Opération bulk 49",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0049"
+  },
+  {
+    "montant": 62.5,
+    "date": "2026-07-24",
+    "libelle": "Opération bulk 50",
+    "type_mouvement": "entree",
+    "reference": "BULK-0050"
+  },
+  {
+    "montant": 62.75,
+    "date": "2026-08-25",
+    "libelle": "Opération bulk 51",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0051"
+  },
+  {
+    "montant": 63,
+    "date": "2026-09-26",
+    "libelle": "Opération bulk 52",
+    "type_mouvement": "entree",
+    "reference": "BULK-0052"
+  },
+  {
+    "montant": 63.25,
+    "date": "2026-10-27",
+    "libelle": "Opération bulk 53",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0053"
+  },
+  {
+    "montant": 63.5,
+    "date": "2026-11-01",
+    "libelle": "Opération bulk 54",
+    "type_mouvement": "entree",
+    "reference": "BULK-0054"
+  },
+  {
+    "montant": 63.75,
+    "date": "2026-01-02",
+    "libelle": "Opération bulk 55",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0055"
+  },
+  {
+    "montant": 64,
+    "date": "2026-02-03",
+    "libelle": "Opération bulk 56",
+    "type_mouvement": "entree",
+    "reference": "BULK-0056"
+  },
+  {
+    "montant": 64.25,
+    "date": "2026-03-04",
+    "libelle": "Opération bulk 57",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0057"
+  },
+  {
+    "montant": 64.5,
+    "date": "2026-04-05",
+    "libelle": "Opération bulk 58",
+    "type_mouvement": "entree",
+    "reference": "BULK-0058"
+  },
+  {
+    "montant": 64.75,
+    "date": "2026-05-06",
+    "libelle": "Opération bulk 59",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0059"
+  },
+  {
+    "montant": 65,
+    "date": "2026-06-07",
+    "libelle": "Opération bulk 60",
+    "type_mouvement": "entree",
+    "reference": "BULK-0060"
+  },
+  {
+    "montant": 65.25,
+    "date": "2026-07-08",
+    "libelle": "Opération bulk 61",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0061"
+  },
+  {
+    "montant": 65.5,
+    "date": "2026-08-09",
+    "libelle": "Opération bulk 62",
+    "type_mouvement": "entree",
+    "reference": "BULK-0062"
+  },
+  {
+    "montant": 65.75,
+    "date": "2026-09-10",
+    "libelle": "Opération bulk 63",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0063"
+  },
+  {
+    "montant": 66,
+    "date": "2026-10-11",
+    "libelle": "Opération bulk 64",
+    "type_mouvement": "entree",
+    "reference": "BULK-0064"
+  },
+  {
+    "montant": 66.25,
+    "date": "2026-11-12",
+    "libelle": "Opération bulk 65",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0065"
+  },
+  {
+    "montant": 66.5,
+    "date": "2026-01-13",
+    "libelle": "Opération bulk 66",
+    "type_mouvement": "entree",
+    "reference": "BULK-0066"
+  },
+  {
+    "montant": 66.75,
+    "date": "2026-02-14",
+    "libelle": "Opération bulk 67",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0067"
+  },
+  {
+    "montant": 67,
+    "date": "2026-03-15",
+    "libelle": "Opération bulk 68",
+    "type_mouvement": "entree",
+    "reference": "BULK-0068"
+  },
+  {
+    "montant": 67.25,
+    "date": "2026-04-16",
+    "libelle": "Opération bulk 69",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0069"
+  },
+  {
+    "montant": 67.5,
+    "date": "2026-05-17",
+    "libelle": "Opération bulk 70",
+    "type_mouvement": "entree",
+    "reference": "BULK-0070"
+  },
+  {
+    "montant": 67.75,
+    "date": "2026-06-18",
+    "libelle": "Opération bulk 71",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0071"
+  },
+  {
+    "montant": 68,
+    "date": "2026-07-19",
+    "libelle": "Opération bulk 72",
+    "type_mouvement": "entree",
+    "reference": "BULK-0072"
+  },
+  {
+    "montant": 68.25,
+    "date": "2026-08-20",
+    "libelle": "Opération bulk 73",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0073"
+  },
+  {
+    "montant": 68.5,
+    "date": "2026-09-21",
+    "libelle": "Opération bulk 74",
+    "type_mouvement": "entree",
+    "reference": "BULK-0074"
+  },
+  {
+    "montant": 68.75,
+    "date": "2026-10-22",
+    "libelle": "Opération bulk 75",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0075"
+  },
+  {
+    "montant": 69,
+    "date": "2026-11-23",
+    "libelle": "Opération bulk 76",
+    "type_mouvement": "entree",
+    "reference": "BULK-0076"
+  },
+  {
+    "montant": 69.25,
+    "date": "2026-01-24",
+    "libelle": "Opération bulk 77",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0077"
+  },
+  {
+    "montant": 69.5,
+    "date": "2026-02-25",
+    "libelle": "Opération bulk 78",
+    "type_mouvement": "entree",
+    "reference": "BULK-0078"
+  },
+  {
+    "montant": 69.75,
+    "date": "2026-03-26",
+    "libelle": "Opération bulk 79",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0079"
+  },
+  {
+    "montant": 70,
+    "date": "2026-04-27",
+    "libelle": "Opération bulk 80",
+    "type_mouvement": "entree",
+    "reference": "BULK-0080"
+  },
+  {
+    "montant": 70.25,
+    "date": "2026-05-01",
+    "libelle": "Opération bulk 81",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0081"
+  },
+  {
+    "montant": 70.5,
+    "date": "2026-06-02",
+    "libelle": "Opération bulk 82",
+    "type_mouvement": "entree",
+    "reference": "BULK-0082"
+  },
+  {
+    "montant": 70.75,
+    "date": "2026-07-03",
+    "libelle": "Opération bulk 83",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0083"
+  },
+  {
+    "montant": 71,
+    "date": "2026-08-04",
+    "libelle": "Opération bulk 84",
+    "type_mouvement": "entree",
+    "reference": "BULK-0084"
+  },
+  {
+    "montant": 71.25,
+    "date": "2026-09-05",
+    "libelle": "Opération bulk 85",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0085"
+  },
+  {
+    "montant": 71.5,
+    "date": "2026-10-06",
+    "libelle": "Opération bulk 86",
+    "type_mouvement": "entree",
+    "reference": "BULK-0086"
+  },
+  {
+    "montant": 71.75,
+    "date": "2026-11-07",
+    "libelle": "Opération bulk 87",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0087"
+  },
+  {
+    "montant": 72,
+    "date": "2026-01-08",
+    "libelle": "Opération bulk 88",
+    "type_mouvement": "entree",
+    "reference": "BULK-0088"
+  },
+  {
+    "montant": 72.25,
+    "date": "2026-02-09",
+    "libelle": "Opération bulk 89",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0089"
+  },
+  {
+    "montant": 72.5,
+    "date": "2026-03-10",
+    "libelle": "Opération bulk 90",
+    "type_mouvement": "entree",
+    "reference": "BULK-0090"
+  },
+  {
+    "montant": 72.75,
+    "date": "2026-04-11",
+    "libelle": "Opération bulk 91",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0091"
+  },
+  {
+    "montant": 73,
+    "date": "2026-05-12",
+    "libelle": "Opération bulk 92",
+    "type_mouvement": "entree",
+    "reference": "BULK-0092"
+  },
+  {
+    "montant": 73.25,
+    "date": "2026-06-13",
+    "libelle": "Opération bulk 93",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0093"
+  },
+  {
+    "montant": 73.5,
+    "date": "2026-07-14",
+    "libelle": "Opération bulk 94",
+    "type_mouvement": "entree",
+    "reference": "BULK-0094"
+  },
+  {
+    "montant": 73.75,
+    "date": "2026-08-15",
+    "libelle": "Opération bulk 95",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0095"
+  },
+  {
+    "montant": 74,
+    "date": "2026-09-16",
+    "libelle": "Opération bulk 96",
+    "type_mouvement": "entree",
+    "reference": "BULK-0096"
+  },
+  {
+    "montant": 74.25,
+    "date": "2026-10-17",
+    "libelle": "Opération bulk 97",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0097"
+  },
+  {
+    "montant": 74.5,
+    "date": "2026-11-18",
+    "libelle": "Opération bulk 98",
+    "type_mouvement": "entree",
+    "reference": "BULK-0098"
+  },
+  {
+    "montant": 74.75,
+    "date": "2026-01-19",
+    "libelle": "Opération bulk 99",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0099"
+  },
+  {
+    "montant": 75,
+    "date": "2026-02-20",
+    "libelle": "Opération bulk 100",
+    "type_mouvement": "entree",
+    "reference": "BULK-0100"
+  },
+  {
+    "montant": 75.25,
+    "date": "2026-03-21",
+    "libelle": "Opération bulk 101",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0101"
+  },
+  {
+    "montant": 75.5,
+    "date": "2026-04-22",
+    "libelle": "Opération bulk 102",
+    "type_mouvement": "entree",
+    "reference": "BULK-0102"
+  },
+  {
+    "montant": 75.75,
+    "date": "2026-05-23",
+    "libelle": "Opération bulk 103",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0103"
+  },
+  {
+    "montant": 76,
+    "date": "2026-06-24",
+    "libelle": "Opération bulk 104",
+    "type_mouvement": "entree",
+    "reference": "BULK-0104"
+  },
+  {
+    "montant": 76.25,
+    "date": "2026-07-25",
+    "libelle": "Opération bulk 105",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0105"
+  },
+  {
+    "montant": 76.5,
+    "date": "2026-08-26",
+    "libelle": "Opération bulk 106",
+    "type_mouvement": "entree",
+    "reference": "BULK-0106"
+  },
+  {
+    "montant": 76.75,
+    "date": "2026-09-27",
+    "libelle": "Opération bulk 107",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0107"
+  },
+  {
+    "montant": 77,
+    "date": "2026-10-01",
+    "libelle": "Opération bulk 108",
+    "type_mouvement": "entree",
+    "reference": "BULK-0108"
+  },
+  {
+    "montant": 77.25,
+    "date": "2026-11-02",
+    "libelle": "Opération bulk 109",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0109"
+  },
+  {
+    "montant": 77.5,
+    "date": "2026-01-03",
+    "libelle": "Opération bulk 110",
+    "type_mouvement": "entree",
+    "reference": "BULK-0110"
+  },
+  {
+    "montant": 77.75,
+    "date": "2026-02-04",
+    "libelle": "Opération bulk 111",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0111"
+  },
+  {
+    "montant": 78,
+    "date": "2026-03-05",
+    "libelle": "Opération bulk 112",
+    "type_mouvement": "entree",
+    "reference": "BULK-0112"
+  },
+  {
+    "montant": 78.25,
+    "date": "2026-04-06",
+    "libelle": "Opération bulk 113",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0113"
+  },
+  {
+    "montant": 78.5,
+    "date": "2026-05-07",
+    "libelle": "Opération bulk 114",
+    "type_mouvement": "entree",
+    "reference": "BULK-0114"
+  },
+  {
+    "montant": 78.75,
+    "date": "2026-06-08",
+    "libelle": "Opération bulk 115",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0115"
+  },
+  {
+    "montant": 79,
+    "date": "2026-07-09",
+    "libelle": "Opération bulk 116",
+    "type_mouvement": "entree",
+    "reference": "BULK-0116"
+  },
+  {
+    "montant": 79.25,
+    "date": "2026-08-10",
+    "libelle": "Opération bulk 117",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0117"
+  },
+  {
+    "montant": 79.5,
+    "date": "2026-09-11",
+    "libelle": "Opération bulk 118",
+    "type_mouvement": "entree",
+    "reference": "BULK-0118"
+  },
+  {
+    "montant": 79.75,
+    "date": "2026-10-12",
+    "libelle": "Opération bulk 119",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0119"
+  },
+  {
+    "montant": 80,
+    "date": "2026-11-13",
+    "libelle": "Opération bulk 120",
+    "type_mouvement": "entree",
+    "reference": "BULK-0120"
+  },
+  {
+    "montant": 80.25,
+    "date": "2026-01-14",
+    "libelle": "Opération bulk 121",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0121"
+  },
+  {
+    "montant": 80.5,
+    "date": "2026-02-15",
+    "libelle": "Opération bulk 122",
+    "type_mouvement": "entree",
+    "reference": "BULK-0122"
+  },
+  {
+    "montant": 80.75,
+    "date": "2026-03-16",
+    "libelle": "Opération bulk 123",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0123"
+  },
+  {
+    "montant": 81,
+    "date": "2026-04-17",
+    "libelle": "Opération bulk 124",
+    "type_mouvement": "entree",
+    "reference": "BULK-0124"
+  },
+  {
+    "montant": 81.25,
+    "date": "2026-05-18",
+    "libelle": "Opération bulk 125",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0125"
+  },
+  {
+    "montant": 81.5,
+    "date": "2026-06-19",
+    "libelle": "Opération bulk 126",
+    "type_mouvement": "entree",
+    "reference": "BULK-0126"
+  },
+  {
+    "montant": 81.75,
+    "date": "2026-07-20",
+    "libelle": "Opération bulk 127",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0127"
+  },
+  {
+    "montant": 82,
+    "date": "2026-08-21",
+    "libelle": "Opération bulk 128",
+    "type_mouvement": "entree",
+    "reference": "BULK-0128"
+  },
+  {
+    "montant": 82.25,
+    "date": "2026-09-22",
+    "libelle": "Opération bulk 129",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0129"
+  },
+  {
+    "montant": 82.5,
+    "date": "2026-10-23",
+    "libelle": "Opération bulk 130",
+    "type_mouvement": "entree",
+    "reference": "BULK-0130"
+  },
+  {
+    "montant": 82.75,
+    "date": "2026-11-24",
+    "libelle": "Opération bulk 131",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0131"
+  },
+  {
+    "montant": 83,
+    "date": "2026-01-25",
+    "libelle": "Opération bulk 132",
+    "type_mouvement": "entree",
+    "reference": "BULK-0132"
+  },
+  {
+    "montant": 83.25,
+    "date": "2026-02-26",
+    "libelle": "Opération bulk 133",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0133"
+  },
+  {
+    "montant": 83.5,
+    "date": "2026-03-27",
+    "libelle": "Opération bulk 134",
+    "type_mouvement": "entree",
+    "reference": "BULK-0134"
+  },
+  {
+    "montant": 83.75,
+    "date": "2026-04-01",
+    "libelle": "Opération bulk 135",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0135"
+  },
+  {
+    "montant": 84,
+    "date": "2026-05-02",
+    "libelle": "Opération bulk 136",
+    "type_mouvement": "entree",
+    "reference": "BULK-0136"
+  },
+  {
+    "montant": 84.25,
+    "date": "2026-06-03",
+    "libelle": "Opération bulk 137",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0137"
+  },
+  {
+    "montant": 84.5,
+    "date": "2026-07-04",
+    "libelle": "Opération bulk 138",
+    "type_mouvement": "entree",
+    "reference": "BULK-0138"
+  },
+  {
+    "montant": 84.75,
+    "date": "2026-08-05",
+    "libelle": "Opération bulk 139",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0139"
+  },
+  {
+    "montant": 85,
+    "date": "2026-09-06",
+    "libelle": "Opération bulk 140",
+    "type_mouvement": "entree",
+    "reference": "BULK-0140"
+  },
+  {
+    "montant": 85.25,
+    "date": "2026-10-07",
+    "libelle": "Opération bulk 141",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0141"
+  },
+  {
+    "montant": 85.5,
+    "date": "2026-11-08",
+    "libelle": "Opération bulk 142",
+    "type_mouvement": "entree",
+    "reference": "BULK-0142"
+  },
+  {
+    "montant": 85.75,
+    "date": "2026-01-09",
+    "libelle": "Opération bulk 143",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0143"
+  },
+  {
+    "montant": 86,
+    "date": "2026-02-10",
+    "libelle": "Opération bulk 144",
+    "type_mouvement": "entree",
+    "reference": "BULK-0144"
+  },
+  {
+    "montant": 86.25,
+    "date": "2026-03-11",
+    "libelle": "Opération bulk 145",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0145"
+  },
+  {
+    "montant": 86.5,
+    "date": "2026-04-12",
+    "libelle": "Opération bulk 146",
+    "type_mouvement": "entree",
+    "reference": "BULK-0146"
+  },
+  {
+    "montant": 86.75,
+    "date": "2026-05-13",
+    "libelle": "Opération bulk 147",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0147"
+  },
+  {
+    "montant": 87,
+    "date": "2026-06-14",
+    "libelle": "Opération bulk 148",
+    "type_mouvement": "entree",
+    "reference": "BULK-0148"
+  },
+  {
+    "montant": 87.25,
+    "date": "2026-07-15",
+    "libelle": "Opération bulk 149",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0149"
+  },
+  {
+    "montant": 87.5,
+    "date": "2026-08-16",
+    "libelle": "Opération bulk 150",
+    "type_mouvement": "entree",
+    "reference": "BULK-0150"
+  },
+  {
+    "montant": 87.75,
+    "date": "2026-09-17",
+    "libelle": "Opération bulk 151",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0151"
+  },
+  {
+    "montant": 88,
+    "date": "2026-10-18",
+    "libelle": "Opération bulk 152",
+    "type_mouvement": "entree",
+    "reference": "BULK-0152"
+  },
+  {
+    "montant": 88.25,
+    "date": "2026-11-19",
+    "libelle": "Opération bulk 153",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0153"
+  },
+  {
+    "montant": 88.5,
+    "date": "2026-01-20",
+    "libelle": "Opération bulk 154",
+    "type_mouvement": "entree",
+    "reference": "BULK-0154"
+  },
+  {
+    "montant": 88.75,
+    "date": "2026-02-21",
+    "libelle": "Opération bulk 155",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0155"
+  },
+  {
+    "montant": 89,
+    "date": "2026-03-22",
+    "libelle": "Opération bulk 156",
+    "type_mouvement": "entree",
+    "reference": "BULK-0156"
+  },
+  {
+    "montant": 89.25,
+    "date": "2026-04-23",
+    "libelle": "Opération bulk 157",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0157"
+  },
+  {
+    "montant": 89.5,
+    "date": "2026-05-24",
+    "libelle": "Opération bulk 158",
+    "type_mouvement": "entree",
+    "reference": "BULK-0158"
+  },
+  {
+    "montant": 89.75,
+    "date": "2026-06-25",
+    "libelle": "Opération bulk 159",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0159"
+  },
+  {
+    "montant": 90,
+    "date": "2026-07-26",
+    "libelle": "Opération bulk 160",
+    "type_mouvement": "entree",
+    "reference": "BULK-0160"
+  },
+  {
+    "montant": 90.25,
+    "date": "2026-08-27",
+    "libelle": "Opération bulk 161",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0161"
+  },
+  {
+    "montant": 90.5,
+    "date": "2026-09-01",
+    "libelle": "Opération bulk 162",
+    "type_mouvement": "entree",
+    "reference": "BULK-0162"
+  },
+  {
+    "montant": 90.75,
+    "date": "2026-10-02",
+    "libelle": "Opération bulk 163",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0163"
+  },
+  {
+    "montant": 91,
+    "date": "2026-11-03",
+    "libelle": "Opération bulk 164",
+    "type_mouvement": "entree",
+    "reference": "BULK-0164"
+  },
+  {
+    "montant": 91.25,
+    "date": "2026-01-04",
+    "libelle": "Opération bulk 165",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0165"
+  },
+  {
+    "montant": 91.5,
+    "date": "2026-02-05",
+    "libelle": "Opération bulk 166",
+    "type_mouvement": "entree",
+    "reference": "BULK-0166"
+  },
+  {
+    "montant": 91.75,
+    "date": "2026-03-06",
+    "libelle": "Opération bulk 167",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0167"
+  },
+  {
+    "montant": 92,
+    "date": "2026-04-07",
+    "libelle": "Opération bulk 168",
+    "type_mouvement": "entree",
+    "reference": "BULK-0168"
+  },
+  {
+    "montant": 92.25,
+    "date": "2026-05-08",
+    "libelle": "Opération bulk 169",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0169"
+  },
+  {
+    "montant": 92.5,
+    "date": "2026-06-09",
+    "libelle": "Opération bulk 170",
+    "type_mouvement": "entree",
+    "reference": "BULK-0170"
+  },
+  {
+    "montant": 92.75,
+    "date": "2026-07-10",
+    "libelle": "Opération bulk 171",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0171"
+  },
+  {
+    "montant": 93,
+    "date": "2026-08-11",
+    "libelle": "Opération bulk 172",
+    "type_mouvement": "entree",
+    "reference": "BULK-0172"
+  },
+  {
+    "montant": 93.25,
+    "date": "2026-09-12",
+    "libelle": "Opération bulk 173",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0173"
+  },
+  {
+    "montant": 93.5,
+    "date": "2026-10-13",
+    "libelle": "Opération bulk 174",
+    "type_mouvement": "entree",
+    "reference": "BULK-0174"
+  },
+  {
+    "montant": 93.75,
+    "date": "2026-11-14",
+    "libelle": "Opération bulk 175",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0175"
+  },
+  {
+    "montant": 94,
+    "date": "2026-01-15",
+    "libelle": "Opération bulk 176",
+    "type_mouvement": "entree",
+    "reference": "BULK-0176"
+  },
+  {
+    "montant": 94.25,
+    "date": "2026-02-16",
+    "libelle": "Opération bulk 177",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0177"
+  },
+  {
+    "montant": 94.5,
+    "date": "2026-03-17",
+    "libelle": "Opération bulk 178",
+    "type_mouvement": "entree",
+    "reference": "BULK-0178"
+  },
+  {
+    "montant": 94.75,
+    "date": "2026-04-18",
+    "libelle": "Opération bulk 179",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0179"
+  },
+  {
+    "montant": 95,
+    "date": "2026-05-19",
+    "libelle": "Opération bulk 180",
+    "type_mouvement": "entree",
+    "reference": "BULK-0180"
+  },
+  {
+    "montant": 95.25,
+    "date": "2026-06-20",
+    "libelle": "Opération bulk 181",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0181"
+  },
+  {
+    "montant": 95.5,
+    "date": "2026-07-21",
+    "libelle": "Opération bulk 182",
+    "type_mouvement": "entree",
+    "reference": "BULK-0182"
+  },
+  {
+    "montant": 95.75,
+    "date": "2026-08-22",
+    "libelle": "Opération bulk 183",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0183"
+  },
+  {
+    "montant": 96,
+    "date": "2026-09-23",
+    "libelle": "Opération bulk 184",
+    "type_mouvement": "entree",
+    "reference": "BULK-0184"
+  },
+  {
+    "montant": 96.25,
+    "date": "2026-10-24",
+    "libelle": "Opération bulk 185",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0185"
+  },
+  {
+    "montant": 96.5,
+    "date": "2026-11-25",
+    "libelle": "Opération bulk 186",
+    "type_mouvement": "entree",
+    "reference": "BULK-0186"
+  },
+  {
+    "montant": 96.75,
+    "date": "2026-01-26",
+    "libelle": "Opération bulk 187",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0187"
+  },
+  {
+    "montant": 97,
+    "date": "2026-02-27",
+    "libelle": "Opération bulk 188",
+    "type_mouvement": "entree",
+    "reference": "BULK-0188"
+  },
+  {
+    "montant": 97.25,
+    "date": "2026-03-01",
+    "libelle": "Opération bulk 189",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0189"
+  },
+  {
+    "montant": 97.5,
+    "date": "2026-04-02",
+    "libelle": "Opération bulk 190",
+    "type_mouvement": "entree",
+    "reference": "BULK-0190"
+  },
+  {
+    "montant": 97.75,
+    "date": "2026-05-03",
+    "libelle": "Opération bulk 191",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0191"
+  },
+  {
+    "montant": 98,
+    "date": "2026-06-04",
+    "libelle": "Opération bulk 192",
+    "type_mouvement": "entree",
+    "reference": "BULK-0192"
+  },
+  {
+    "montant": 98.25,
+    "date": "2026-07-05",
+    "libelle": "Opération bulk 193",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0193"
+  },
+  {
+    "montant": 98.5,
+    "date": "2026-08-06",
+    "libelle": "Opération bulk 194",
+    "type_mouvement": "entree",
+    "reference": "BULK-0194"
+  },
+  {
+    "montant": 98.75,
+    "date": "2026-09-07",
+    "libelle": "Opération bulk 195",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0195"
+  },
+  {
+    "montant": 99,
+    "date": "2026-10-08",
+    "libelle": "Opération bulk 196",
+    "type_mouvement": "entree",
+    "reference": "BULK-0196"
+  },
+  {
+    "montant": 99.25,
+    "date": "2026-11-09",
+    "libelle": "Opération bulk 197",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0197"
+  },
+  {
+    "montant": 99.5,
+    "date": "2026-01-10",
+    "libelle": "Opération bulk 198",
+    "type_mouvement": "entree",
+    "reference": "BULK-0198"
+  },
+  {
+    "montant": 99.75,
+    "date": "2026-02-11",
+    "libelle": "Opération bulk 199",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0199"
+  },
+  {
+    "montant": 100,
+    "date": "2026-03-12",
+    "libelle": "Opération bulk 200",
+    "type_mouvement": "entree",
+    "reference": "BULK-0200"
+  },
+  {
+    "montant": 100.25,
+    "date": "2026-04-13",
+    "libelle": "Opération bulk 201",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0201"
+  },
+  {
+    "montant": 100.5,
+    "date": "2026-05-14",
+    "libelle": "Opération bulk 202",
+    "type_mouvement": "entree",
+    "reference": "BULK-0202"
+  },
+  {
+    "montant": 100.75,
+    "date": "2026-06-15",
+    "libelle": "Opération bulk 203",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0203"
+  },
+  {
+    "montant": 101,
+    "date": "2026-07-16",
+    "libelle": "Opération bulk 204",
+    "type_mouvement": "entree",
+    "reference": "BULK-0204"
+  },
+  {
+    "montant": 101.25,
+    "date": "2026-08-17",
+    "libelle": "Opération bulk 205",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0205"
+  },
+  {
+    "montant": 101.5,
+    "date": "2026-09-18",
+    "libelle": "Opération bulk 206",
+    "type_mouvement": "entree",
+    "reference": "BULK-0206"
+  },
+  {
+    "montant": 101.75,
+    "date": "2026-10-19",
+    "libelle": "Opération bulk 207",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0207"
+  },
+  {
+    "montant": 102,
+    "date": "2026-11-20",
+    "libelle": "Opération bulk 208",
+    "type_mouvement": "entree",
+    "reference": "BULK-0208"
+  },
+  {
+    "montant": 102.25,
+    "date": "2026-01-21",
+    "libelle": "Opération bulk 209",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0209"
+  },
+  {
+    "montant": 102.5,
+    "date": "2026-02-22",
+    "libelle": "Opération bulk 210",
+    "type_mouvement": "entree",
+    "reference": "BULK-0210"
+  },
+  {
+    "montant": 102.75,
+    "date": "2026-03-23",
+    "libelle": "Opération bulk 211",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0211"
+  },
+  {
+    "montant": 103,
+    "date": "2026-04-24",
+    "libelle": "Opération bulk 212",
+    "type_mouvement": "entree",
+    "reference": "BULK-0212"
+  },
+  {
+    "montant": 103.25,
+    "date": "2026-05-25",
+    "libelle": "Opération bulk 213",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0213"
+  },
+  {
+    "montant": 103.5,
+    "date": "2026-06-26",
+    "libelle": "Opération bulk 214",
+    "type_mouvement": "entree",
+    "reference": "BULK-0214"
+  },
+  {
+    "montant": 103.75,
+    "date": "2026-07-27",
+    "libelle": "Opération bulk 215",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0215"
+  },
+  {
+    "montant": 104,
+    "date": "2026-08-01",
+    "libelle": "Opération bulk 216",
+    "type_mouvement": "entree",
+    "reference": "BULK-0216"
+  },
+  {
+    "montant": 104.25,
+    "date": "2026-09-02",
+    "libelle": "Opération bulk 217",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0217"
+  },
+  {
+    "montant": 104.5,
+    "date": "2026-10-03",
+    "libelle": "Opération bulk 218",
+    "type_mouvement": "entree",
+    "reference": "BULK-0218"
+  },
+  {
+    "montant": 104.75,
+    "date": "2026-11-04",
+    "libelle": "Opération bulk 219",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0219"
+  },
+  {
+    "montant": 105,
+    "date": "2026-01-05",
+    "libelle": "Opération bulk 220",
+    "type_mouvement": "entree",
+    "reference": "BULK-0220"
+  },
+  {
+    "montant": 105.25,
+    "date": "2026-02-06",
+    "libelle": "Opération bulk 221",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0221"
+  },
+  {
+    "montant": 105.5,
+    "date": "2026-03-07",
+    "libelle": "Opération bulk 222",
+    "type_mouvement": "entree",
+    "reference": "BULK-0222"
+  },
+  {
+    "montant": 105.75,
+    "date": "2026-04-08",
+    "libelle": "Opération bulk 223",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0223"
+  },
+  {
+    "montant": 106,
+    "date": "2026-05-09",
+    "libelle": "Opération bulk 224",
+    "type_mouvement": "entree",
+    "reference": "BULK-0224"
+  },
+  {
+    "montant": 106.25,
+    "date": "2026-06-10",
+    "libelle": "Opération bulk 225",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0225"
+  },
+  {
+    "montant": 106.5,
+    "date": "2026-07-11",
+    "libelle": "Opération bulk 226",
+    "type_mouvement": "entree",
+    "reference": "BULK-0226"
+  },
+  {
+    "montant": 106.75,
+    "date": "2026-08-12",
+    "libelle": "Opération bulk 227",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0227"
+  },
+  {
+    "montant": 107,
+    "date": "2026-09-13",
+    "libelle": "Opération bulk 228",
+    "type_mouvement": "entree",
+    "reference": "BULK-0228"
+  },
+  {
+    "montant": 107.25,
+    "date": "2026-10-14",
+    "libelle": "Opération bulk 229",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0229"
+  },
+  {
+    "montant": 107.5,
+    "date": "2026-11-15",
+    "libelle": "Opération bulk 230",
+    "type_mouvement": "entree",
+    "reference": "BULK-0230"
+  },
+  {
+    "montant": 107.75,
+    "date": "2026-01-16",
+    "libelle": "Opération bulk 231",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0231"
+  },
+  {
+    "montant": 108,
+    "date": "2026-02-17",
+    "libelle": "Opération bulk 232",
+    "type_mouvement": "entree",
+    "reference": "BULK-0232"
+  },
+  {
+    "montant": 108.25,
+    "date": "2026-03-18",
+    "libelle": "Opération bulk 233",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0233"
+  },
+  {
+    "montant": 108.5,
+    "date": "2026-04-19",
+    "libelle": "Opération bulk 234",
+    "type_mouvement": "entree",
+    "reference": "BULK-0234"
+  },
+  {
+    "montant": 108.75,
+    "date": "2026-05-20",
+    "libelle": "Opération bulk 235",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0235"
+  },
+  {
+    "montant": 109,
+    "date": "2026-06-21",
+    "libelle": "Opération bulk 236",
+    "type_mouvement": "entree",
+    "reference": "BULK-0236"
+  },
+  {
+    "montant": 109.25,
+    "date": "2026-07-22",
+    "libelle": "Opération bulk 237",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0237"
+  },
+  {
+    "montant": 109.5,
+    "date": "2026-08-23",
+    "libelle": "Opération bulk 238",
+    "type_mouvement": "entree",
+    "reference": "BULK-0238"
+  },
+  {
+    "montant": 109.75,
+    "date": "2026-09-24",
+    "libelle": "Opération bulk 239",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0239"
+  },
+  {
+    "montant": 110,
+    "date": "2026-10-25",
+    "libelle": "Opération bulk 240",
+    "type_mouvement": "entree",
+    "reference": "BULK-0240"
+  },
+  {
+    "montant": 110.25,
+    "date": "2026-11-26",
+    "libelle": "Opération bulk 241",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0241"
+  },
+  {
+    "montant": 110.5,
+    "date": "2026-01-27",
+    "libelle": "Opération bulk 242",
+    "type_mouvement": "entree",
+    "reference": "BULK-0242"
+  },
+  {
+    "montant": 110.75,
+    "date": "2026-02-01",
+    "libelle": "Opération bulk 243",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0243"
+  },
+  {
+    "montant": 111,
+    "date": "2026-03-02",
+    "libelle": "Opération bulk 244",
+    "type_mouvement": "entree",
+    "reference": "BULK-0244"
+  },
+  {
+    "montant": 111.25,
+    "date": "2026-04-03",
+    "libelle": "Opération bulk 245",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0245"
+  },
+  {
+    "montant": 111.5,
+    "date": "2026-05-04",
+    "libelle": "Opération bulk 246",
+    "type_mouvement": "entree",
+    "reference": "BULK-0246"
+  },
+  {
+    "montant": 111.75,
+    "date": "2026-06-05",
+    "libelle": "Opération bulk 247",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0247"
+  },
+  {
+    "montant": 112,
+    "date": "2026-07-06",
+    "libelle": "Opération bulk 248",
+    "type_mouvement": "entree",
+    "reference": "BULK-0248"
+  },
+  {
+    "montant": 112.25,
+    "date": "2026-08-07",
+    "libelle": "Opération bulk 249",
+    "type_mouvement": "sortie",
+    "reference": "BULK-0249"
+  }
+]

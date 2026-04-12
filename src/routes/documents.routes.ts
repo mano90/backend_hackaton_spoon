@@ -2,112 +2,164 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import redis from '../services/redis.service';
-import { extractTextFromPDF } from '../services/pdf.service';
-import { extractFactureData } from '../agents/extractor.agent';
-import { classifyDocument } from '../agents/classifier.agent';
-import { checkFactureSimilarity } from '../agents/similarity.agent';
+import { ingestOnePdf, VALID_DOC_TYPES } from '../services/document-ingest.service';
+import { linkDocumentsIntoDossiers, type DossierLinkInput } from '../agents/dossier-link.agent';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
-const VALID_TYPES = ['devis', 'bon_commande', 'bon_livraison', 'bon_reception', 'facture', 'email'];
-const CONFIDENCE_THRESHOLD = 75;
+const BATCH_MAX_FILES = 30;
+const uploadBatch = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024, files: BATCH_MAX_FILES },
+});
 
 // Upload a document PDF (auto-classification)
 router.post('/upload', upload.single('file'), async (req: Request, res: Response) => {
   try {
-    if (!req.file) { res.status(400).json({ error: 'No file uploaded' }); return; }
+    if (!req.file) {
+      res.status(400).json({ error: 'No file uploaded' });
+      return;
+    }
 
-    const rawText = await extractTextFromPDF(req.file.buffer);
-    const extracted = await extractFactureData(rawText);
+    const result = await ingestOnePdf(req.file.buffer, req.file.originalname, {
+      docType: req.body.docType,
+    });
 
-    // Classify the document
-    const classification = await classifyDocument(rawText, req.file.originalname);
-    // Allow override from body if user explicitly chose a type
-    const forcedType = req.body.docType;
-    const docType = (forcedType && VALID_TYPES.includes(forcedType)) ? forcedType : classification.docType;
-    const isUncertain = !forcedType && classification.confidence < CONFIDENCE_THRESHOLD;
-
-    const doc = {
-      id: uuidv4(),
-      fileName: req.file.originalname,
-      rawText,
-      docType,
-      montant: extracted.montant || null,
-      date: extracted.date || '',
-      fournisseur: extracted.fournisseur || '',
-      reference: extracted.reference || '',
-      type: docType,
-      createdAt: new Date().toISOString(),
-    };
-
-    if (isUncertain) {
-      // Store as pending, let user confirm the type
-      const pendingKey = `document:pending:${doc.id}`;
-      await redis.set(pendingKey, JSON.stringify(doc), 'EX', 600);
-      await redis.set(`${pendingKey}:pdf`, req.file.buffer.toString('base64'), 'EX', 600);
-
+    if (result.kind === 'saved') {
+      res.json({ success: true, document: result.document, classification: result.classification });
+      return;
+    }
+    if (result.kind === 'pending_classification') {
       res.json({
         success: false,
         needsClassification: true,
-        pendingDocument: doc,
+        pendingDocument: result.pendingDocument,
         classification: {
-          suggestedType: classification.docType,
-          confidence: classification.confidence,
-          reason: classification.reason,
+          suggestedType: result.classification.docType,
+          confidence: result.classification.confidence,
+          reason: result.classification.reason,
         },
       });
       return;
     }
+    if (result.kind === 'pending_duplicate') {
+      res.json({
+        success: false,
+        needsConfirmation: true,
+        pendingDocument: result.pendingDocument,
+        similarity: result.similarity,
+      });
+      return;
+    }
+    res.status(500).json({ error: result.message });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('Document upload error:', err);
+    res.status(500).json({ error: message });
+  }
+});
 
-    // Check for duplicates on factures
-    if (docType === 'facture') {
-      const existingIds = await redis.smembers('document:ids');
-      const existingFactures = (await Promise.all(
-        existingIds.map(async (id: string) => {
-          const data = await redis.get(`document:${id}`);
-          if (!data) return null;
-          const d = JSON.parse(data);
-          return d.docType === 'facture' ? d : null;
-        })
-      )).filter(Boolean);
+/**
+ * Import multiple PDFs : multer (champ "files"), lecture, extraction + agent classifieur,
+ * enregistrement Redis, puis agent de regroupement pour relier les pièces en dossiers (scenarioId).
+ */
+router.post('/upload-batch', uploadBatch.array('files', BATCH_MAX_FILES), async (req: Request, res: Response) => {
+  try {
+    const files = req.files as Express.Multer.File[] | undefined;
+    if (!files?.length) {
+      res.status(400).json({
+        error: 'Aucun fichier. Envoyez un multipart/form-data avec le champ "files" (un ou plusieurs PDF).',
+      });
+      return;
+    }
 
-      if (existingFactures.length > 0) {
-        const similarity = await checkFactureSimilarity(
-          { montant: doc.montant || 0, date: doc.date, fournisseur: doc.fournisseur, reference: doc.reference, rawText: doc.rawText, fileSize: req.file.size },
-          existingFactures.map((f: any) => ({ id: f.id, montant: f.montant || 0, date: f.date, fournisseur: f.fournisseur, reference: f.reference, fileName: f.fileName }))
-        );
+    const results: Record<string, unknown>[] = [];
+    const savedForLink: DossierLinkInput[] = [];
 
-        if (similarity.hasDuplicate && similarity.confidence >= 70) {
-          const pendingKey = `document:pending:${doc.id}`;
-          await redis.set(pendingKey, JSON.stringify(doc), 'EX', 600);
-          await redis.set(`${pendingKey}:pdf`, req.file.buffer.toString('base64'), 'EX', 600);
+    for (const file of files) {
+      const name = file.originalname || 'document.pdf';
+      if (!name.toLowerCase().endsWith('.pdf')) {
+        results.push({
+          fileName: name,
+          outcome: 'error',
+          error: 'Seuls les fichiers .pdf sont acceptés',
+        });
+        continue;
+      }
 
-          res.json({
-            success: false,
-            needsConfirmation: true,
-            pendingDocument: doc,
-            similarity: {
-              duplicateId: similarity.duplicateId,
-              confidence: similarity.confidence,
-              reason: similarity.reason,
-              existingDocument: existingFactures.find((f: any) => f.id === similarity.duplicateId) || null,
-            },
-          });
-          return;
-        }
+      const r = await ingestOnePdf(file.buffer, name, {
+        docType: req.body?.docType,
+        assignDefaultScenarioId: false,
+      });
+
+      if (r.kind === 'saved') {
+        results.push({
+          fileName: name,
+          outcome: 'saved',
+          document: r.document,
+          classification: r.classification,
+        });
+        savedForLink.push({
+          id: r.document.id as string,
+          docType: String(r.document.docType ?? ''),
+          fournisseur: String(r.document.fournisseur ?? ''),
+          reference: String(r.document.reference ?? ''),
+          date: String(r.document.date ?? ''),
+        });
+      } else if (r.kind === 'pending_classification') {
+        results.push({
+          fileName: name,
+          outcome: 'pending_classification',
+          pendingDocument: r.pendingDocument,
+          classification: {
+            suggestedType: r.classification.docType,
+            confidence: r.classification.confidence,
+            reason: r.classification.reason,
+          },
+        });
+      } else if (r.kind === 'pending_duplicate') {
+        results.push({
+          fileName: name,
+          outcome: 'pending_duplicate',
+          pendingDocument: r.pendingDocument,
+          similarity: r.similarity,
+        });
+      } else {
+        results.push({ fileName: name, outcome: 'error', error: r.message });
       }
     }
 
-    // Save directly
-    await redis.set(`document:${doc.id}`, JSON.stringify(doc));
-    await redis.set(`document:${doc.id}:pdf`, req.file.buffer.toString('base64'));
-    await redis.sadd('document:ids', doc.id);
+    let dossiers: { scenarioId: string; documentIds: string[] }[] | undefined;
 
-    res.json({ success: true, document: doc, classification });
-  } catch (err: any) {
-    console.error('Document upload error:', err);
-    res.status(500).json({ error: err.message });
+    if (savedForLink.length >= 1) {
+      const idToScenario = await linkDocumentsIntoDossiers(savedForLink);
+      const byScenario = new Map<string, string[]>();
+      for (const [docId, scenarioId] of idToScenario.entries()) {
+        const data = await redis.get(`document:${docId}`);
+        if (!data) continue;
+        const doc = JSON.parse(data) as Record<string, unknown>;
+        doc.scenarioId = scenarioId;
+        await redis.set(`document:${docId}`, JSON.stringify(doc));
+        if (!byScenario.has(scenarioId)) byScenario.set(scenarioId, []);
+        byScenario.get(scenarioId)!.push(docId);
+      }
+      dossiers = Array.from(byScenario.entries()).map(([scenarioId, documentIds]) => ({
+        scenarioId,
+        documentIds,
+      }));
+    }
+
+    res.json({
+      success: true,
+      fileCount: files.length,
+      results,
+      dossiers,
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('Document batch upload error:', err);
+    res.status(500).json({ error: message });
   }
 });
 
@@ -118,23 +170,30 @@ router.post('/confirm/:pendingId', async (req: Request, res: Response) => {
     const pendingKey = `document:pending:${pendingId}`;
     const data = await redis.get(pendingKey);
     const pdfData = await redis.get(`${pendingKey}:pdf`);
-    if (!data) { res.status(404).json({ error: 'Pending document expired or not found' }); return; }
+    if (!data) {
+      res.status(404).json({ error: 'Pending document expired or not found' });
+      return;
+    }
 
-    const doc = JSON.parse(data);
-    // Allow type override
-    if (req.body.docType && VALID_TYPES.includes(req.body.docType)) {
+    const doc = JSON.parse(data) as Record<string, unknown>;
+    if (req.body.docType && VALID_DOC_TYPES.includes(req.body.docType as (typeof VALID_DOC_TYPES)[number])) {
       doc.docType = req.body.docType;
       doc.type = req.body.docType;
     }
 
+    if (doc.scenarioId == null) {
+      doc.scenarioId = uuidv4();
+    }
+
     await redis.set(`document:${doc.id}`, JSON.stringify(doc));
     if (pdfData) await redis.set(`document:${doc.id}:pdf`, pdfData);
-    await redis.sadd('document:ids', doc.id);
+    await redis.sadd('document:ids', doc.id as string);
     await redis.del(pendingKey, `${pendingKey}:pdf`);
 
     res.json({ success: true, document: doc });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: message });
   }
 });
 
@@ -145,7 +204,10 @@ router.post('/replace/:pendingId/:existingId', async (req: Request, res: Respons
     const pendingKey = `document:pending:${pendingId}`;
     const data = await redis.get(pendingKey);
     const pdfData = await redis.get(`${pendingKey}:pdf`);
-    if (!data) { res.status(404).json({ error: 'Pending document expired or not found' }); return; }
+    if (!data) {
+      res.status(404).json({ error: 'Pending document expired or not found' });
+      return;
+    }
 
     const doc = JSON.parse(data);
     await redis.del(`document:${existingId}`, `document:${existingId}:pdf`);
@@ -156,8 +218,9 @@ router.post('/replace/:pendingId/:existingId', async (req: Request, res: Respons
     await redis.del(pendingKey, `${pendingKey}:pdf`);
 
     res.json({ success: true, document: doc, replacedId: existingId });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: message });
   }
 });
 
@@ -167,8 +230,9 @@ router.delete('/pending/:pendingId', async (req: Request, res: Response) => {
     const pendingKey = `document:pending:${req.params.pendingId}`;
     await redis.del(pendingKey, `${pendingKey}:pdf`);
     res.json({ success: true });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: message });
   }
 });
 
@@ -177,20 +241,23 @@ router.get('/', async (req: Request, res: Response) => {
   try {
     const typeFilter = req.query.type as string | undefined;
     const ids = await redis.smembers('document:ids');
-    const docs = (await Promise.all(
-      ids.map(async (id: string) => {
-        const data = await redis.get(`document:${id}`);
-        return data ? JSON.parse(data) : null;
-      })
-    )).filter(Boolean);
+    const docs = (
+      await Promise.all(
+        ids.map(async (id: string) => {
+          const d = await redis.get(`document:${id}`);
+          return d ? JSON.parse(d) : null;
+        })
+      )
+    ).filter(Boolean);
 
     if (typeFilter) {
-      res.json(docs.filter((d: any) => d.docType === typeFilter || d.type === typeFilter));
+      res.json(docs.filter((d: { docType?: string; type?: string }) => d.docType === typeFilter || d.type === typeFilter));
     } else {
       res.json(docs);
     }
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: message });
   }
 });
 
@@ -198,12 +265,16 @@ router.get('/', async (req: Request, res: Response) => {
 router.get('/pending/:pendingId/pdf', async (req: Request, res: Response) => {
   try {
     const pdfBase64 = await redis.get(`document:pending:${req.params.pendingId}:pdf`);
-    if (!pdfBase64) { res.status(404).json({ error: 'PDF not found' }); return; }
+    if (!pdfBase64) {
+      res.status(404).json({ error: 'PDF not found' });
+      return;
+    }
     const buffer = Buffer.from(pdfBase64, 'base64');
     res.set({ 'Content-Type': 'application/pdf', 'Content-Length': buffer.length.toString() });
     res.send(buffer);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: message });
   }
 });
 
@@ -211,10 +282,14 @@ router.get('/pending/:pendingId/pdf', async (req: Request, res: Response) => {
 router.get('/:id', async (req: Request, res: Response) => {
   try {
     const data = await redis.get(`document:${req.params.id}`);
-    if (!data) { res.status(404).json({ error: 'Not found' }); return; }
+    if (!data) {
+      res.status(404).json({ error: 'Not found' });
+      return;
+    }
     res.json(JSON.parse(data));
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: message });
   }
 });
 
@@ -222,12 +297,16 @@ router.get('/:id', async (req: Request, res: Response) => {
 router.get('/:id/pdf', async (req: Request, res: Response) => {
   try {
     const pdfBase64 = await redis.get(`document:${req.params.id}:pdf`);
-    if (!pdfBase64) { res.status(404).json({ error: 'PDF not found' }); return; }
+    if (!pdfBase64) {
+      res.status(404).json({ error: 'PDF not found' });
+      return;
+    }
     const buffer = Buffer.from(pdfBase64, 'base64');
     res.set({ 'Content-Type': 'application/pdf', 'Content-Length': buffer.length.toString() });
     res.send(buffer);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: message });
   }
 });
 
@@ -237,8 +316,9 @@ router.delete('/:id', async (req: Request, res: Response) => {
     await redis.del(`document:${req.params.id}`, `document:${req.params.id}:pdf`);
     await redis.srem('document:ids', req.params.id as string);
     res.json({ success: true });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: message });
   }
 });
 

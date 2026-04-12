@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "purpose": "Montants mouvement vs factures pour tests rapprochement (référence)"
+  },
+  "cases": [
+    {
+      "mouvementMontant": 1500,
+      "factures": [
+        1500
+      ],
+      "expected": "exact"
+    },
+    {
+      "mouvementMontant": 1500,
+      "factures": [
+        800,
+        700
+      ],
+      "expected": "exact"
+    },
+    {
+      "mouvementMontant": 1500,
+      "factures": [
+        1000
+      ],
+      "expected": "partial"
+    },
+    {
+      "mouvementMontant": 1500.01,
+      "factures": [
+        1500
+      ],
+      "expected": "écart 0.01"
+    },
+    {
+      "mouvementMontant": 0,
+      "factures": [
+        100
+      ],
+      "expected": "mouvement nul"
+    },
+    {
+      "mouvementMontant": 999999,
+      "factures": [
+        1,
+        2,
+        3
+      ],
+      "expected": "no_match probable"
+    }
+  ]
+}
