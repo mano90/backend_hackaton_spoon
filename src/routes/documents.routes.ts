@@ -2,8 +2,19 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import redis from '../services/redis.service';
-import { ingestOnePdf, VALID_DOC_TYPES } from '../services/document-ingest.service';
+import { ingestOnePdf, INGEST_STEP_COUNT, VALID_DOC_TYPES } from '../services/document-ingest.service';
 import { linkDocumentsIntoDossiers, type DossierLinkInput } from '../agents/dossier-link.agent';
+import { emitDocumentsBatchProgress } from '../services/realtime-import.service';
+
+/** Réception (1) + sous-étapes ingest (INGEST_STEP_COUNT) */
+const BATCH_FILE_STEP_COUNT = 1 + INGEST_STEP_COUNT;
+
+function percentForFileSubstep(fileIdx: number, fileTotal: number, step1Based: number, stepTotal: number): number {
+  const lo = Math.min(88, 5 + Math.round(((fileIdx - 1) / fileTotal) * 83));
+  const hi = Math.min(88, 5 + Math.round((fileIdx / fileTotal) * 83));
+  if (hi <= lo || stepTotal <= 0) return lo;
+  return Math.round(lo + (step1Based / stepTotal) * (hi - lo));
+}
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -68,18 +79,40 @@ router.post('/upload-batch', uploadBatch.array('files', BATCH_MAX_FILES), async 
   try {
     const files = req.files as Express.Multer.File[] | undefined;
     if (!files?.length) {
+      emitDocumentsBatchProgress({ phase: 'error', message: 'Aucun fichier', percent: 0 });
       res.status(400).json({
         error: 'Aucun fichier. Envoyez un multipart/form-data avec le champ "files" (un ou plusieurs PDF).',
       });
       return;
     }
 
+    const n = files.length;
+    emitDocumentsBatchProgress({
+      phase: 'started',
+      message: `Téléversement reçu — ${n} fichier(s) à traiter`,
+      percent: 3,
+      total: n,
+    });
+
     const results: Record<string, unknown>[] = [];
     const savedForLink: DossierLinkInput[] = [];
 
+    let idx = 0;
     for (const file of files) {
+      idx += 1;
       const name = file.originalname || 'document.pdf';
+      const basePct = (i: number) => Math.min(88, 5 + Math.round((i / n) * 83));
+
       if (!name.toLowerCase().endsWith('.pdf')) {
+        emitDocumentsBatchProgress({
+          phase: 'processing',
+          message: `Ignoré (non PDF) : ${name}`,
+          percent: basePct(idx),
+          fileName: name,
+          index: idx,
+          total: n,
+          outcome: 'error',
+        });
         results.push({
           fileName: name,
           outcome: 'error',
@@ -88,12 +121,43 @@ router.post('/upload-batch', uploadBatch.array('files', BATCH_MAX_FILES), async 
         continue;
       }
 
-      const r = await ingestOnePdf(file.buffer, name, {
-        docType: req.body?.docType,
-        assignDefaultScenarioId: false,
+      emitDocumentsBatchProgress({
+        phase: 'processing',
+        message: `Réception du fichier en mémoire — fichier ${idx}/${n} — ${name}`,
+        percent: percentForFileSubstep(idx, n, 1, BATCH_FILE_STEP_COUNT),
+        fileName: name,
+        index: idx,
+        total: n,
+        stage: 'receive',
+        step: 1,
+        stepCount: BATCH_FILE_STEP_COUNT,
       });
 
+      const r = await ingestOnePdf(
+        file.buffer,
+        name,
+        {
+          docType: req.body?.docType,
+          assignDefaultScenarioId: false,
+        },
+        (info) => {
+          emitDocumentsBatchProgress({
+            phase: 'processing',
+            message: `${info.label} — fichier ${idx}/${n} — ${name}`,
+            percent: percentForFileSubstep(idx, n, info.stepIndex + 2, BATCH_FILE_STEP_COUNT),
+            fileName: name,
+            index: idx,
+            total: n,
+            stage: info.stage,
+            step: info.stepIndex + 2,
+            stepCount: BATCH_FILE_STEP_COUNT,
+          });
+        }
+      );
+
+      let outcomeLabel = '';
       if (r.kind === 'saved') {
+        outcomeLabel = `Enregistré (${String(r.document.docType ?? r.document.type ?? '?')})`;
         results.push({
           fileName: name,
           outcome: 'saved',
@@ -108,6 +172,7 @@ router.post('/upload-batch', uploadBatch.array('files', BATCH_MAX_FILES), async 
           date: String(r.document.date ?? ''),
         });
       } else if (r.kind === 'pending_classification') {
+        outcomeLabel = 'En attente de classification';
         results.push({
           fileName: name,
           outcome: 'pending_classification',
@@ -119,6 +184,7 @@ router.post('/upload-batch', uploadBatch.array('files', BATCH_MAX_FILES), async 
           },
         });
       } else if (r.kind === 'pending_duplicate') {
+        outcomeLabel = 'Doublon détecté — confirmation requise';
         results.push({
           fileName: name,
           outcome: 'pending_duplicate',
@@ -126,13 +192,30 @@ router.post('/upload-batch', uploadBatch.array('files', BATCH_MAX_FILES), async 
           similarity: r.similarity,
         });
       } else {
+        outcomeLabel = r.message || 'Erreur';
         results.push({ fileName: name, outcome: 'error', error: r.message });
       }
+
+      emitDocumentsBatchProgress({
+        phase: 'processing',
+        message: `${name} — ${outcomeLabel}`,
+        percent: basePct(idx),
+        fileName: name,
+        index: idx,
+        total: n,
+        outcome: outcomeLabel,
+      });
     }
 
     let dossiers: { scenarioId: string; documentIds: string[] }[] | undefined;
 
     if (savedForLink.length >= 1) {
+      emitDocumentsBatchProgress({
+        phase: 'linking',
+        message: `Liaison des dossiers (${savedForLink.length} pièce(s))…`,
+        percent: 90,
+        total: n,
+      });
       const idToScenario = await linkDocumentsIntoDossiers(savedForLink);
       const byScenario = new Map<string, string[]>();
       for (const [docId, scenarioId] of idToScenario.entries()) {
@@ -150,6 +233,15 @@ router.post('/upload-batch', uploadBatch.array('files', BATCH_MAX_FILES), async 
       }));
     }
 
+    emitDocumentsBatchProgress({
+      phase: 'done',
+      message: dossiers?.length
+        ? `Terminé — ${dossiers.length} dossier(s) relié(s)`
+        : 'Terminé',
+      percent: 100,
+      total: n,
+    });
+
     res.json({
       success: true,
       fileCount: files.length,
@@ -159,6 +251,7 @@ router.post('/upload-batch', uploadBatch.array('files', BATCH_MAX_FILES), async 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('Document batch upload error:', err);
+    emitDocumentsBatchProgress({ phase: 'error', message, percent: 0 });
     res.status(500).json({ error: message });
   }
 });
@@ -176,6 +269,8 @@ router.post('/confirm/:pendingId', async (req: Request, res: Response) => {
     }
 
     const doc = JSON.parse(data) as Record<string, unknown>;
+    delete doc.pendingKind;
+    delete doc.similarity;
     if (req.body.docType && VALID_DOC_TYPES.includes(req.body.docType as (typeof VALID_DOC_TYPES)[number])) {
       doc.docType = req.body.docType;
       doc.type = req.body.docType;
@@ -209,7 +304,9 @@ router.post('/replace/:pendingId/:existingId', async (req: Request, res: Respons
       return;
     }
 
-    const doc = JSON.parse(data);
+    const doc = JSON.parse(data) as Record<string, unknown>;
+    delete doc.pendingKind;
+    delete doc.similarity;
     await redis.del(`document:${existingId}`, `document:${existingId}:pdf`);
     await redis.srem('document:ids', existingId as string);
     await redis.set(`document:${doc.id}`, JSON.stringify(doc));
@@ -255,6 +352,44 @@ router.get('/', async (req: Request, res: Response) => {
     } else {
       res.json(docs);
     }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: message });
+  }
+});
+
+/** Liste des imports en attente (Redis), sans le PDF ni le texte brut — pour UI onglet / notifications. */
+router.get('/pending-list', async (_req: Request, res: Response) => {
+  try {
+    const keys = await redis.keys('document:pending:*');
+    const metaKeys = keys.filter((k: string) => !k.endsWith(':pdf'));
+    const items: Record<string, unknown>[] = [];
+    for (const key of metaKeys) {
+      const raw = await redis.get(key);
+      if (!raw) continue;
+      const doc = JSON.parse(raw) as Record<string, unknown>;
+      const id = String(doc.id ?? key.replace(/^document:pending:/, ''));
+      const { rawText: _rt, ...rest } = doc;
+      const sim = doc.similarity as { duplicateId?: string } | undefined;
+      const inferredDuplicate = typeof sim?.duplicateId === 'string' && sim.duplicateId.length > 0;
+      const pendingKind =
+        (doc.pendingKind as string | undefined) ??
+        (inferredDuplicate ? 'duplicate' : 'classification');
+      items.push({
+        id,
+        pendingKind,
+        fileName: doc.fileName,
+        docType: doc.docType ?? doc.type,
+        reference: doc.reference,
+        fournisseur: doc.fournisseur,
+        date: doc.date,
+        montant: doc.montant,
+        similarity: doc.similarity ?? null,
+        pendingDocument: { ...rest, id },
+      });
+    }
+    items.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+    res.json({ items });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     res.status(500).json({ error: message });

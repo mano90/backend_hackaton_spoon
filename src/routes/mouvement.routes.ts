@@ -4,28 +4,45 @@ import { v4 as uuidv4 } from 'uuid';
 import redis from '../services/redis.service';
 import { MouvementBancaire } from '../types';
 import { parseMouvementsCsv } from '../services/csv-mouvements.service';
+import { emitImportProgress } from '../services/realtime-import.service';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
+const REDIS_CHUNK = 120;
+
 /**
  * Import CSV (relevé / export) : détection ; ou , colonnes date, montant, libellé…
- * Doit être déclaré avant GET /:id
+ * Progression temps réel : diffusée à tous les clients Socket.io connectés.
  */
 router.post('/import-csv', upload.single('file'), async (req: Request, res: Response) => {
   try {
     if (!req.file) {
+      emitImportProgress({ phase: 'error', message: 'Fichier manquant', percent: 0 });
       res.status(400).json({ error: 'Fichier manquant (champ file, CSV UTF-8)' });
       return;
     }
     const name = (req.file.originalname || '').toLowerCase();
     if (!name.endsWith('.csv') && !name.endsWith('.txt')) {
+      emitImportProgress( { phase: 'error', message: 'Extension invalide', percent: 0 });
       res.status(400).json({ error: 'Extension attendue : .csv ou .txt' });
       return;
     }
 
+    emitImportProgress( { phase: 'reading', message: 'Lecture et analyse du CSV…', percent: 8 });
+
     const { rows, errors, headers } = parseMouvementsCsv(req.file.buffer);
+
+    emitImportProgress( {
+      phase: 'parsing',
+      message: `${rows.length} ligne(s) valide(s)${errors.length ? ` (${errors.length} ligne(s) ignorée(s))` : ''}`,
+      percent: 22,
+      current: 0,
+      total: rows.length,
+    });
+
     if (!rows.length) {
+      emitImportProgress( { phase: 'error', message: 'Aucun mouvement valide', percent: 0 });
       res.status(400).json({
         error: 'Aucun mouvement valide',
         parseErrors: errors,
@@ -45,12 +62,33 @@ router.post('/import-csv', upload.single('file'), async (req: Request, res: Resp
       createdAt: new Date().toISOString(),
     }));
 
-    const pipeline = redis.pipeline();
-    for (const m of mouvements) {
-      pipeline.set(`mouvement:${m.id}`, JSON.stringify(m));
-      pipeline.sadd('mouvement:ids', m.id);
+    const total = mouvements.length;
+    for (let i = 0; i < total; i += REDIS_CHUNK) {
+      const slice = mouvements.slice(i, i + REDIS_CHUNK);
+      const pipeline = redis.pipeline();
+      for (const m of slice) {
+        pipeline.set(`mouvement:${m.id}`, JSON.stringify(m));
+        pipeline.sadd('mouvement:ids', m.id);
+      }
+      await pipeline.exec();
+      const current = Math.min(i + slice.length, total);
+      const pct = 25 + Math.round((current / total) * 70);
+      emitImportProgress( {
+        phase: 'saving',
+        message: `Enregistrement en base… ${current} / ${total}`,
+        percent: Math.min(pct, 98),
+        current,
+        total,
+      });
     }
-    await pipeline.exec();
+
+    emitImportProgress( {
+      phase: 'done',
+      message: `Import terminé : ${total} mouvement(s)`,
+      percent: 100,
+      current: total,
+      total,
+    });
 
     res.json({
       success: true,
@@ -62,6 +100,7 @@ router.post('/import-csv', upload.single('file'), async (req: Request, res: Resp
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('CSV import error:', err);
+    emitImportProgress( { phase: 'error', message, percent: 0 });
     res.status(500).json({ error: message });
   }
 });
@@ -97,14 +136,23 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
-// Bulk create mouvements (JSON array)
+// Bulk create mouvements (JSON array) — progression diffusée à tous les clients Socket.io
 router.post('/bulk', async (req: Request, res: Response) => {
   try {
     const items = req.body;
     if (!Array.isArray(items) || items.length === 0) {
+      emitImportProgress( { phase: 'error', message: 'Tableau vide ou invalide', percent: 0 });
       res.status(400).json({ error: 'Body must be a non-empty array of mouvements' });
       return;
     }
+
+    emitImportProgress( {
+      phase: 'parsing',
+      message: `Préparation de ${items.length} mouvement(s)…`,
+      percent: 15,
+      current: 0,
+      total: items.length,
+    });
 
     const mouvements: MouvementBancaire[] = items.map((m: any) => ({
       id: uuidv4(),
@@ -117,16 +165,38 @@ router.post('/bulk', async (req: Request, res: Response) => {
       createdAt: new Date().toISOString(),
     }));
 
-    const pipeline = redis.pipeline();
-    for (const mouvement of mouvements) {
-      pipeline.set(`mouvement:${mouvement.id}`, JSON.stringify(mouvement));
-      pipeline.sadd('mouvement:ids', mouvement.id);
+    const total = mouvements.length;
+    for (let i = 0; i < total; i += REDIS_CHUNK) {
+      const slice = mouvements.slice(i, i + REDIS_CHUNK);
+      const pipeline = redis.pipeline();
+      for (const mouvement of slice) {
+        pipeline.set(`mouvement:${mouvement.id}`, JSON.stringify(mouvement));
+        pipeline.sadd('mouvement:ids', mouvement.id);
+      }
+      await pipeline.exec();
+      const current = Math.min(i + slice.length, total);
+      const pct = 20 + Math.round((current / total) * 75);
+      emitImportProgress( {
+        phase: 'saving',
+        message: `Enregistrement… ${current} / ${total}`,
+        percent: Math.min(pct, 99),
+        current,
+        total,
+      });
     }
-    await pipeline.exec();
+
+    emitImportProgress( {
+      phase: 'done',
+      message: `Bulk terminé : ${total} mouvement(s)`,
+      percent: 100,
+      current: total,
+      total,
+    });
 
     res.json({ success: true, count: mouvements.length, mouvements });
   } catch (err: any) {
     console.error('Mouvement bulk creation error:', err);
+    emitImportProgress( { phase: 'error', message: err.message || String(err), percent: 0 });
     res.status(500).json({ error: err.message });
   }
 });
