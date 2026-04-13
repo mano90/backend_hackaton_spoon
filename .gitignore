@@ -6,3 +6,5 @@ uploads/*
 
 # PDFs générés localement (npm run seed-documents / seed) — ne pas versionner.
 *.pdf
+seed-documents/
+seed-factures/

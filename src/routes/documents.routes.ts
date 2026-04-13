@@ -445,6 +445,29 @@ router.get('/:id/pdf', async (req: Request, res: Response) => {
   }
 });
 
+// Inject raw documents for testing (no PDF required)
+router.post('/inject', async (req: Request, res: Response) => {
+  try {
+    const items = req.body;
+    if (!Array.isArray(items) || items.length === 0) {
+      res.status(400).json({ error: 'Body must be a non-empty array of documents' });
+      return;
+    }
+    const ids: string[] = [];
+    for (const item of items) {
+      const id = uuidv4();
+      const doc = { id, rawText: '', fileName: `${item.reference || id}.pdf`, createdAt: new Date().toISOString(), ...item };
+      await redis.set(`document:${id}`, JSON.stringify(doc));
+      await redis.sadd('document:ids', id);
+      ids.push(id);
+    }
+    res.json({ success: true, count: ids.length, ids });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: message });
+  }
+});
+
 // Delete a document
 router.delete('/:id', async (req: Request, res: Response) => {
   try {

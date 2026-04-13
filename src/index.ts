@@ -9,6 +9,7 @@ import queryRoutes from "./routes/query.routes";
 import statsRoutes from "./routes/stats.routes";
 import documentsRoutes from "./routes/documents.routes";
 import timelineRoutes from "./routes/timeline.routes";
+import configRoutes from "./routes/config.routes";
 import { attachRealtime } from "./services/realtime-import.service";
 
 dotenv.config();
@@ -32,6 +33,7 @@ app.use("/api/rapprochement", rapprochementRoutes);
 app.use("/api/query", queryRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/timeline", timelineRoutes);
+app.use("/api/config", configRoutes);
 
 // Health check
 app.get("/api/health", (_req, res) => {
@@ -46,7 +48,7 @@ httpServer.listen(PORT, async () => {
 
   try {
     const { seed } = await import('./seed');
-    await seed();
+    // await seed();
   } catch (err) {
     console.error('[Seed] Failed:', err);
   }
