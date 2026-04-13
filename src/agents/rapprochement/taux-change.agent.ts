@@ -1,4 +1,5 @@
 import { callAgent } from '../base.agent';
+import { getConfig } from '../../services/config.service';
 import { Facture, MouvementBancaire, DiscrepancyMatchResult } from './types';
 
 const TAUX_CHANGE_SYSTEM = `Tu es un expert en opérations de change et transactions internationales.
@@ -20,11 +21,9 @@ Réponds au format JSON strict :
   "montantFactures": <number>,
   "ecart": <number>,
   "discrepancyReason": "exchange_rate",
-  "explanation": "<explication incluant la devise détectée, le taux estimé, et le calcul>"
+  "explanation": "<explication en français, sans préfixe entre crochets, incluant la devise détectée, le taux estimé, et le calcul>"
 }
 Réponds UNIQUEMENT avec le JSON.`;
-
-const TOLERANCE_CHANGE = 0.05; // 5% pour les approximations de taux
 
 export async function detectExchangeRate(
   mouvement: MouvementBancaire,
@@ -34,13 +33,14 @@ export async function detectExchangeRate(
     return { matched: false, matchedFactureIds: [], montantFactures: 0, ecart: mouvement.montant, discrepancyReason: 'none', explanation: 'Aucune facture candidate.' };
   }
 
-  // Quick pre-check: look for obvious foreign currency indicators
   const foreignIndicators = /\b(USD|GBP|CHF|JPY|CAD|AUD|SEK|NOK|DKK|SWIFT|FOREX|DEVISES?|CHANGE|FX)\b/i;
   const hasIndicator = foreignIndicators.test(mouvement.libelle) || foreignIndicators.test(mouvement.reference);
 
   if (!hasIndicator) {
     return { matched: false, matchedFactureIds: [], montantFactures: 0, ecart: mouvement.montant, discrepancyReason: 'none', explanation: 'Aucun indicateur de devise étrangère dans le libellé ou la référence.' };
   }
+
+  const { exchangeRateTolerance } = await getConfig();
 
   const userMessage = `
 MOUVEMENT BANCAIRE :
@@ -57,7 +57,7 @@ ${candidateFactures
   )
   .join('\n')}
 
-Tolérance acceptée pour le taux de change : ±${(TOLERANCE_CHANGE * 100).toFixed(0)}%
+Tolérance acceptée pour le taux de change : ±${exchangeRateTolerance.toFixed(0)}%
 `;
 
   const result = await callAgent(TAUX_CHANGE_SYSTEM, userMessage);

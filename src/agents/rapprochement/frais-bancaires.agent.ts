@@ -1,4 +1,5 @@
 import { callAgent } from '../base.agent';
+import { getConfig } from '../../services/config.service';
 import { Facture, MouvementBancaire, DiscrepancyMatchResult } from './types';
 
 const FRAIS_BANCAIRES_SYSTEM = `Tu es un expert en frais et commissions bancaires.
@@ -26,11 +27,9 @@ Réponds au format JSON strict :
   "montantFactures": <number>,
   "ecart": <number>,
   "discrepancyReason": "bank_fees",
-  "explanation": "<explication détaillée incluant le type de frais identifié>"
+  "explanation": "<explication en français, sans préfixe entre crochets, incluant le type de frais identifié>"
 }
 Réponds UNIQUEMENT avec le JSON.`;
-
-const MAX_FEES = 100; // écart max réaliste pour des frais bancaires
 
 export async function detectBankFees(
   mouvement: MouvementBancaire,
@@ -41,9 +40,9 @@ export async function detectBankFees(
     return { matched: false, matchedFactureIds: [], montantFactures: 0, ecart: mouvement.montant, discrepancyReason: 'none', explanation: 'Aucune facture candidate.' };
   }
 
-  // Pre-filter: payment > invoice AND ecart < MAX_FEES
+  const { bankFeesMaxEcart } = await getConfig();
   const candidates = candidateFactures.filter(
-    (f) => mouvement.montant > f.montant && (mouvement.montant - f.montant) < MAX_FEES
+    (f) => mouvement.montant > f.montant && (mouvement.montant - f.montant) < bankFeesMaxEcart
   );
 
   if (candidates.length === 0) {

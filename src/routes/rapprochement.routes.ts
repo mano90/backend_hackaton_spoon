@@ -48,6 +48,18 @@ router.post('/run/:mouvementId', async (req: Request, res: Response) => {
 
     const result = await performRapprochement(mouvement, factures, allMouvements);
 
+    // Supprimer tout rapprochement existant pour ce mouvement avant d'en créer un nouveau
+    const existingIds = await redis.smembers('rapprochement:ids');
+    for (const rid of existingIds) {
+      const raw = await redis.get(`rapprochement:${rid}`);
+      if (!raw) continue;
+      const existing = JSON.parse(raw);
+      if (existing.mouvementId === mouvement.id) {
+        await redis.del(`rapprochement:${rid}`);
+        await redis.srem('rapprochement:ids', rid);
+      }
+    }
+
     const rapprochement: Rapprochement = {
       id: uuidv4(),
       mouvementId: mouvement.id,
@@ -103,13 +115,19 @@ router.post('/run-all', async (_req: Request, res: Response) => {
       )
     ).filter(Boolean);
 
+    // Purger tous les rapprochements existants avant de relancer sur l'ensemble
+    const existingRappIds = await redis.smembers('rapprochement:ids');
+    if (existingRappIds.length > 0) {
+      await redis.del(...existingRappIds.map((id: string) => `rapprochement:${id}`));
+      await redis.del('rapprochement:ids');
+    }
+
     const results: Rapprochement[] = [];
 
     for (const mid of mouvementIds) {
       const mData = await redis.get(`mouvement:${mid}`);
       if (!mData) continue;
       const mouvement: MouvementBancaire = JSON.parse(mData);
-      if (mouvement.type_mouvement !== 'sortie') continue;
 
       const result = await performRapprochement(mouvement, factures, allMouvements);
 
@@ -137,18 +155,18 @@ router.post('/run-all', async (_req: Request, res: Response) => {
   }
 });
 
-// Get sortie mouvement IDs (for progress tracking)
-router.get('/sortie-ids', async (_req: Request, res: Response) => {
+// Get all mouvement IDs (for progress tracking)
+router.get('/mouvement-ids', async (_req: Request, res: Response) => {
   try {
     const mouvementIds = await redis.smembers('mouvement:ids');
-    const sortieIds: string[] = [];
+    const ids: string[] = [];
     for (const mid of mouvementIds) {
       const mData = await redis.get(`mouvement:${mid}`);
       if (!mData) continue;
       const m = JSON.parse(mData);
-      if (m.type_mouvement === 'sortie') sortieIds.push(m.id);
+      ids.push(m.id);
     }
-    res.json({ ids: sortieIds, count: sortieIds.length });
+    res.json({ ids, count: ids.length });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

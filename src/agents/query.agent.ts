@@ -188,8 +188,12 @@ DONNÉES DISPONIBLES:
 DOCUMENTS (${allDocs.length}):
 ${allDocs
   .map(
-    (d) =>
-      `- ID: ${d.id} | Type: ${d.docType || d.type} | Montant: ${d.montant ?? '-'} | Date: ${d.date} | Fournisseur: ${d.fournisseur || d.from || ''} | Ref: ${d.reference || d.subject || ''} | Parcours (id chaîne): ${d.scenarioId || 'aucun'}`
+    (d) => {
+      const rawSnippet = typeof d.rawText === 'string' && d.rawText.trim()
+        ? ` | Contenu: ${d.rawText.slice(0, 300).replace(/\n/g, ' ')}`
+        : '';
+      return `- ID: ${d.id} | Type: ${d.docType || d.type} | Montant: ${d.montant ?? '-'} | Date: ${d.date} | Fournisseur: ${d.fournisseur || d.from || ''} | Ref: ${d.reference || d.subject || ''} | Parcours (id chaîne): ${d.scenarioId || 'aucun'}${rawSnippet}`;
+    }
   )
   .join('\n')}
 

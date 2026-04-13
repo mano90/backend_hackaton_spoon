@@ -6,17 +6,19 @@ Tu reçois un mouvement bancaire à analyser, d'autres mouvements potentiellemen
 
 Ton rôle est de détecter les DOUBLONS par erreur de saisie :
 - Un doublon de mouvement : deux lignes du relevé bancaire représentent la même opération saisie deux fois (même fournisseur identifiable dans le libellé, même montant ±1%, date ≤ 3 jours d'écart). Ne pas confondre avec un virement récurrent légitime.
-- Un doublon de facture : deux factures représentent la même facturation (même fournisseur, même montant ±0.5%, même référence ou date proche ≤ 5 jours).
+- Un doublon de facture : deux factures de la liste représentent la même facturation (MÊME fournisseur exact, même montant ±0.5%, et même référence OU date proche ≤ 5 jours). Des factures de fournisseurs différents avec le même montant ne sont PAS des doublons.
+
+RÈGLES ABSOLUES :
+- "duplicateFactureIds" ne liste QUE des factures qui sont des doublons ENTRE ELLES dans la liste fournie (deux factures pour la même prestation). Ne jamais y mettre une facture simplement parce qu'elle correspond au montant du mouvement ou que sa référence apparaît dans le libellé du mouvement — c'est une correspondance légitime, pas un doublon.
+- "isDuplicateMouvement" ne vaut true que si un autre mouvement dans la liste représente exactement la même opération bancaire saisie deux fois par erreur.
+- En cas de doute, réponds isDuplicateMouvement: false et duplicateFactureIds: [].
 
 Réponds au format JSON strict :
 {
   "isDuplicateMouvement": <boolean>,
   "duplicateFactureIds": ["<id1>", "<id2>"],
-  "explanation": "<explication détaillée>"
+  "explanation": "<explication détaillée en français, sans préfixe entre crochets>"
 }
-
-- Si aucun doublon trouvé : isDuplicateMouvement: false, duplicateFactureIds: []
-- Sois conservateur : en cas de doute, ne signale PAS de doublon
 Réponds UNIQUEMENT avec le JSON.`;
 
 function daysDiff(d1: string, d2: string): number {
@@ -28,12 +30,17 @@ export async function detectDoublons(
   factures: Facture[],
   allMouvements: MouvementBancaire[]
 ): Promise<DuplicateDetectionResult> {
-  // Pre-filter: only send mouvements within ±5 days and ±1% montant (exclude self)
+  // Pre-filter: only send mouvements within ±3 days, ±1% montant, AND same libellé prefix (exclude self)
+  const libelleWords = mouvement.libelle.toUpperCase().split(/\s+/).filter(w => w.length >= 4);
   const similarMouvements = allMouvements.filter(
-    (m) =>
-      m.id !== mouvement.id &&
-      daysDiff(m.date, mouvement.date) <= 5 &&
-      Math.abs(m.montant - mouvement.montant) / mouvement.montant <= 0.01
+    (m) => {
+      if (m.id === mouvement.id) return false;
+      if (daysDiff(m.date, mouvement.date) > 3) return false;
+      if (Math.abs(m.montant - mouvement.montant) / mouvement.montant > 0.01) return false;
+      // At least one significant word must match between libellés
+      const otherWords = m.libelle.toUpperCase().split(/\s+/).filter(w => w.length >= 4);
+      return libelleWords.some(w => otherWords.includes(w));
+    }
   );
 
   const userMessage = `

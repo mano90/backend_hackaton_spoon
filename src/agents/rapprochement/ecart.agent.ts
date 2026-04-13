@@ -20,7 +20,7 @@ export async function findAmountDiscrepancyMatch(
   const [bankFees, commercialDiscount, groupedPayment, exchangeRate] = await Promise.all([
     detectBankFees(mouvement, candidateFactures, allMouvements),
     detectCommercialDiscount(mouvement, candidateFactures),
-    Promise.resolve(detectGroupedPayment(mouvement, candidateFactures)), // synchronous
+    detectGroupedPayment(mouvement, candidateFactures),
     detectExchangeRate(mouvement, candidateFactures),
   ]);
 

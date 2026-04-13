@@ -18,13 +18,21 @@ export async function performRapprochement(
   // === SA-1 : Détection de doublons ===
   const sa1 = await detectDoublons(mouvement, factures, allMouvements);
 
+  const AGENT_NAMES: Record<string, string> = {
+    bank_fees: 'Détection de frais bancaires',
+    commercial_discount: 'Détection d\'escompte commercial',
+    grouped_payment: 'Détection de paiement groupé',
+    exchange_rate: 'Détection d\'écart de taux de change',
+    none: 'Analyse d\'écart de montant',
+  };
+
   if (sa1.isDuplicateMouvement) {
     return {
       matchedFactureIds: [],
       montantFactures: 0,
       ecart: mouvement.montant,
       status: 'no_match',
-      explanation: `[SA-1 Doublons] Mouvement identifié comme doublon. ${sa1.explanation}`,
+      explanation: `[Détection de doublons] Mouvement identifié comme doublon. ${sa1.explanation}`,
     };
   }
 
@@ -42,7 +50,7 @@ export async function performRapprochement(
       montantFactures: sa2.montantFactures,
       ecart: sa2.ecart,
       status: 'exact',
-      explanation: `${doublonNote}[SA-2 Exact] ${sa2.explanation}`,
+      explanation: `${doublonNote}[Correspondance exacte] ${sa2.explanation}`,
     };
   }
 
@@ -54,7 +62,7 @@ export async function performRapprochement(
       montantFactures: sa3.montantFactures,
       ecart: sa3.ecart,
       status: 'exact',
-      explanation: `${doublonNote}[SA-3 Fuzzy] ${sa3.explanation}`,
+      explanation: `${doublonNote}[Correspondance sémantique] ${sa3.explanation}`,
     };
   }
 
@@ -66,16 +74,16 @@ export async function performRapprochement(
       montantFactures: sa4.montantFactures,
       ecart: sa4.ecart,
       status: 'partial',
-      explanation: `${doublonNote}[SA-4 ${sa4.discrepancyReason}] ${sa4.explanation}`,
+      explanation: `${doublonNote}[${AGENT_NAMES[sa4.discrepancyReason] ?? 'Analyse d\'écart'}] ${sa4.explanation}`,
     };
   }
 
   // === Aucun rapprochement trouvé ===
   const explanationParts = [
     doublonNote,
-    `[SA-2] ${sa2.explanation}`,
-    `[SA-3] ${sa3.explanation}`,
-    `[SA-4] ${sa4.explanation}`,
+    `[Correspondance exacte] ${sa2.explanation}`,
+    `[Correspondance sémantique] ${sa3.explanation}`,
+    `[Analyse d'écart de montant] ${sa4.explanation}`,
   ].filter(Boolean);
 
   return {
