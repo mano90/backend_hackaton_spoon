@@ -8,8 +8,98 @@ import { checkFactureSimilarity } from '../agents/similarity.agent';
 export const VALID_DOC_TYPES = ['devis', 'bon_commande', 'bon_livraison', 'bon_reception', 'facture', 'email'] as const;
 export const CONFIDENCE_THRESHOLD = 75;
 
-/** Types pour lesquels on compare avec les documents déjà enregistrés du même type (pas les emails). */
-export const DUPLICATE_CHECK_DOC_TYPES: readonly string[] = ['facture', 'bon_commande'];
+/** Tous les types PDF métier sauf `email` (pièces comparées entre elles par type). */
+export function shouldCheckDuplicate(docType: string): boolean {
+  return (
+    VALID_DOC_TYPES.includes(docType as (typeof VALID_DOC_TYPES)[number]) && docType !== 'email'
+  );
+}
+
+function duplicatePluralLabel(docType: string): string {
+  const m: Record<string, string> = {
+    facture: 'factures',
+    bon_commande: 'bons de commande',
+    devis: 'devis',
+    bon_livraison: 'bons de livraison',
+    bon_reception: 'bons de réception',
+  };
+  return m[docType] ?? docType;
+}
+
+/**
+ * Détecte un doublon fort vs documents déjà enregistrés du même type ; met à jour `doc` (pendingKind, similarity) si oui.
+ * N’écrit pas Redis — l’appelant persiste `document:pending:*` si besoin.
+ */
+export async function tryCreateDuplicatePending(
+  doc: Record<string, unknown>,
+  buffer: Buffer,
+  docType: string
+): Promise<IngestPendingDuplicate | null> {
+  if (!shouldCheckDuplicate(docType)) return null;
+
+  const existingIds = await redis.smembers('document:ids');
+  const existingSameType = (
+    await Promise.all(
+      existingIds.map(async (id: string) => {
+        const data = await redis.get(`document:${id}`);
+        if (!data) return null;
+        const d = JSON.parse(data);
+        return d.docType === docType ? d : null;
+      })
+    )
+  ).filter(Boolean) as Record<string, unknown>[];
+
+  if (existingSameType.length === 0) return null;
+
+  const similarity = await checkFactureSimilarity(
+    {
+      montant: (doc.montant as number) || 0,
+      date: doc.date as string,
+      fournisseur: doc.fournisseur as string,
+      reference: doc.reference as string,
+      rawText: doc.rawText as string,
+      fileSize: buffer.length,
+    },
+    existingSameType.map((f: Record<string, unknown>) => ({
+      id: f.id as string,
+      montant: (f.montant as number) || 0,
+      date: f.date as string,
+      fournisseur: f.fournisseur as string,
+      reference: f.reference as string,
+      fileName: f.fileName as string,
+    })),
+    docType
+  );
+
+  if (!similarity.hasDuplicate || similarity.confidence < 70) return null;
+
+  const existingForPending = existingSameType.find(
+    (f: Record<string, unknown>) => f.id === similarity.duplicateId
+  ) as Record<string, unknown> | undefined;
+
+  doc.pendingKind = 'duplicate';
+  doc.similarity = {
+    duplicateId: similarity.duplicateId!,
+    confidence: similarity.confidence,
+    reason: similarity.reason,
+    existingFileName: (existingForPending?.fileName as string) || undefined,
+  };
+
+  return {
+    kind: 'pending_duplicate',
+    pendingDocument: doc,
+    similarity: {
+      duplicateId: similarity.duplicateId!,
+      confidence: similarity.confidence,
+      reason: similarity.reason,
+      existingDocument:
+        (existingSameType.find((f: Record<string, unknown>) => f.id === similarity.duplicateId) as
+          | Record<string, unknown>
+          | null) ?? null,
+    },
+    pdfBase64: buffer.toString('base64'),
+  };
+}
 
 export type IngestSaved = {
   kind: 'saved';
@@ -110,73 +200,15 @@ export async function ingestOnePdf(
       };
     }
 
-    if (DUPLICATE_CHECK_DOC_TYPES.includes(docType)) {
-      const dupLabel = docType === 'facture' ? 'factures' : 'bons de commande';
-      p(3, 'verify_duplicate', `Vérification des doublons (${dupLabel})`);
-      const existingIds = await redis.smembers('document:ids');
-      const existingSameType = (
-        await Promise.all(
-          existingIds.map(async (id: string) => {
-            const data = await redis.get(`document:${id}`);
-            if (!data) return null;
-            const d = JSON.parse(data);
-            return d.docType === docType ? d : null;
-          })
-        )
-      ).filter(Boolean) as Record<string, unknown>[];
-
-      if (existingSameType.length > 0) {
-        const similarity = await checkFactureSimilarity(
-          {
-            montant: (doc.montant as number) || 0,
-            date: doc.date as string,
-            fournisseur: doc.fournisseur as string,
-            reference: doc.reference as string,
-            rawText: doc.rawText as string,
-            fileSize: buffer.length,
-          },
-          existingSameType.map((f: Record<string, unknown>) => ({
-            id: f.id as string,
-            montant: (f.montant as number) || 0,
-            date: f.date as string,
-            fournisseur: f.fournisseur as string,
-            reference: f.reference as string,
-            fileName: f.fileName as string,
-          })),
-          docType
-        );
-
-        if (similarity.hasDuplicate && similarity.confidence >= 70) {
-          p(4, 'persist_pending', 'Enregistrement provisoire (doublon détecté)');
-          const existingForPending = existingSameType.find(
-            (f: Record<string, unknown>) => f.id === similarity.duplicateId
-          ) as Record<string, unknown> | undefined;
-          doc.pendingKind = 'duplicate';
-          doc.similarity = {
-            duplicateId: similarity.duplicateId!,
-            confidence: similarity.confidence,
-            reason: similarity.reason,
-            existingFileName: (existingForPending?.fileName as string) || undefined,
-          };
-          const pendingKey = `document:pending:${doc.id}`;
-          await redis.set(pendingKey, JSON.stringify(doc), 'EX', 600);
-          await redis.set(`${pendingKey}:pdf`, buffer.toString('base64'), 'EX', 600);
-
-          return {
-            kind: 'pending_duplicate',
-            pendingDocument: doc,
-            similarity: {
-              duplicateId: similarity.duplicateId!,
-              confidence: similarity.confidence,
-              reason: similarity.reason,
-              existingDocument:
-                (existingSameType.find((f: Record<string, unknown>) => f.id === similarity.duplicateId) as
-                  | Record<string, unknown>
-                  | null) ?? null,
-            },
-            pdfBase64: buffer.toString('base64'),
-          };
-        }
+    if (shouldCheckDuplicate(docType)) {
+      p(3, 'verify_duplicate', `Vérification des doublons (${duplicatePluralLabel(docType)})`);
+      const dup = await tryCreateDuplicatePending(doc, buffer, docType);
+      if (dup) {
+        p(4, 'persist_pending', 'Enregistrement provisoire (doublon détecté)');
+        const pendingKey = `document:pending:${doc.id}`;
+        await redis.set(pendingKey, JSON.stringify(doc), 'EX', 600);
+        await redis.set(`${pendingKey}:pdf`, buffer.toString('base64'), 'EX', 600);
+        return dup;
       }
     } else {
       p(3, 'verify', 'Contrôle avant enregistrement');

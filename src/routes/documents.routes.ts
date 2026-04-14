@@ -2,7 +2,13 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import redis from '../services/redis.service';
-import { ingestOnePdf, INGEST_STEP_COUNT, VALID_DOC_TYPES } from '../services/document-ingest.service';
+import {
+  ingestOnePdf,
+  INGEST_STEP_COUNT,
+  VALID_DOC_TYPES,
+  shouldCheckDuplicate,
+  tryCreateDuplicatePending,
+} from '../services/document-ingest.service';
 import { linkDocumentsIntoDossiers, type DossierLinkInput } from '../agents/dossier-link.agent';
 import { emitDocumentsBatchProgress } from '../services/realtime-import.service';
 
@@ -275,6 +281,26 @@ router.post('/confirm/:pendingId', async (req: Request, res: Response) => {
       doc.docType = req.body.docType;
       doc.type = req.body.docType;
     }
+
+    const resolvedType = String(doc.docType ?? doc.type ?? '');
+    if (pdfData && shouldCheckDuplicate(resolvedType)) {
+      const buffer = Buffer.from(pdfData, 'base64');
+      const dup = await tryCreateDuplicatePending(doc, buffer, resolvedType);
+      if (dup) {
+        await redis.set(pendingKey, JSON.stringify(doc), 'EX', 600);
+        await redis.set(`${pendingKey}:pdf`, pdfData, 'EX', 600);
+        res.json({
+          success: false,
+          needsConfirmation: true,
+          pendingDocument: dup.pendingDocument,
+          similarity: dup.similarity,
+        });
+        return;
+      }
+    }
+
+    delete doc.pendingKind;
+    delete doc.similarity;
 
     if (doc.scenarioId == null) {
       doc.scenarioId = uuidv4();

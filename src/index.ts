@@ -2,6 +2,7 @@ import { createServer } from "http";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import emailRoutes from './routes/email.routes';
 
 import mouvementRoutes from "./routes/mouvement.routes";
 import rapprochementRoutes from "./routes/rapprochement.routes";
@@ -34,6 +35,7 @@ app.use("/api/query", queryRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/timeline", timelineRoutes);
 app.use("/api/config", configRoutes);
+app.use('/api/emails', emailRoutes);
 
 // Health check
 app.get("/api/health", (_req, res) => {
@@ -48,7 +50,7 @@ httpServer.listen(PORT, async () => {
 
   try {
     const { seed } = await import('./seed');
-    // await seed();
+    await seed();
   } catch (err) {
     console.error('[Seed] Failed:', err);
   }
