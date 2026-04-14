@@ -36,6 +36,10 @@ interface SimilarityResult {
 const DOC_TYPE_LABELS: Record<string, string> = {
   facture: 'facture',
   bon_commande: 'bon de commande',
+  devis: 'devis',
+  bon_livraison: 'bon de livraison',
+  bon_reception: 'bon de réception',
+  email: 'email',
 };
 
 export async function checkFactureSimilarity(
