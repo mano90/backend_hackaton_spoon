@@ -1,4 +1,48 @@
-export interface Facture {
+/** Champs enrichis extraits des factures (LLM + persistance Redis). */
+export interface FactureExtractionExtended {
+  montantHT?: number | null;
+  montantTVA?: number | null;
+  tauxTVA?: number | null;
+  /** Montant TTC (aligné sur l’ancien champ montant). */
+  montantTTC?: number | null;
+  iban?: string | null;
+  bic?: string | null;
+  beneficiaireRIB?: string | null;
+  tvaIntracom?: string | null;
+  siren?: string | null;
+  siret?: string | null;
+  adresseFournisseur?: string | null;
+  libellePrestation?: string | null;
+}
+
+export type FraudSignalKind = 'RIB_CHANGE' | 'FICTIVE' | 'PHISHING' | 'AMOUNT_TAMPER' | 'INFO';
+
+export interface FraudSignal {
+  kind: FraudSignalKind;
+  severity: 'low' | 'medium' | 'high';
+  code: string;
+  evidence: string[];
+}
+
+export interface PdfMetadataFields {
+  title?: string;
+  creator?: string;
+  producer?: string;
+  creationDate?: string;
+  modificationDate?: string;
+}
+
+export interface FraudAnalysis {
+  scannedAt: string;
+  signals: FraudSignal[];
+  maxSeverity: 'none' | 'low' | 'medium' | 'high';
+  summary?: string;
+  llmNote?: string;
+  pdfMetadata?: PdfMetadataFields;
+  vagueLibelleLlm?: { suspicious: boolean; reason?: string };
+}
+
+export interface Facture extends FactureExtractionExtended {
   id: string;
   fileName: string;
   rawText: string;
@@ -9,6 +53,7 @@ export interface Facture {
   scenarioId?: string;
   type: 'facture';
   createdAt: string;
+  fraudAnalysis?: FraudAnalysis;
 }
 
 export interface MouvementBancaire {

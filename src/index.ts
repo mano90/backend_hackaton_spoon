@@ -48,7 +48,7 @@ httpServer.listen(PORT, async () => {
 
   try {
     const { seed } = await import('./seed');
-    // await seed();
+    await seed();
   } catch (err) {
     console.error('[Seed] Failed:', err);
   }

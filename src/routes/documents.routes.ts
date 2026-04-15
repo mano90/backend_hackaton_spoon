@@ -5,6 +5,7 @@ import redis from '../services/redis.service';
 import { ingestOnePdf, INGEST_STEP_COUNT, VALID_DOC_TYPES } from '../services/document-ingest.service';
 import { linkDocumentsIntoDossiers, type DossierLinkInput } from '../agents/dossier-link.agent';
 import { emitDocumentsBatchProgress } from '../services/realtime-import.service';
+import { runFraudAnalysis } from '../services/fraud-analysis.service';
 
 /** Réception (1) + sous-étapes ingest (INGEST_STEP_COUNT) */
 const BATCH_FILE_STEP_COUNT = 1 + INGEST_STEP_COUNT;
@@ -285,6 +286,16 @@ router.post('/confirm/:pendingId', async (req: Request, res: Response) => {
     await redis.sadd('document:ids', doc.id as string);
     await redis.del(pendingKey, `${pendingKey}:pdf`);
 
+    if ((doc.docType === 'facture' || doc.type === 'facture') && pdfData) {
+      try {
+        const buf = Buffer.from(pdfData, 'base64');
+        doc.fraudAnalysis = await runFraudAnalysis(doc, buf);
+        await redis.set(`document:${doc.id}`, JSON.stringify(doc));
+      } catch (e) {
+        console.error('[Fraud] confirm:', e);
+      }
+    }
+
     res.json({ success: true, document: doc });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -313,6 +324,16 @@ router.post('/replace/:pendingId/:existingId', async (req: Request, res: Respons
     if (pdfData) await redis.set(`document:${doc.id}:pdf`, pdfData);
     await redis.sadd('document:ids', doc.id);
     await redis.del(pendingKey, `${pendingKey}:pdf`);
+
+    if ((doc.docType === 'facture' || doc.type === 'facture') && pdfData) {
+      try {
+        const buf = Buffer.from(pdfData, 'base64');
+        doc.fraudAnalysis = await runFraudAnalysis(doc, buf);
+        await redis.set(`document:${doc.id}`, JSON.stringify(doc));
+      } catch (e) {
+        console.error('[Fraud] replace:', e);
+      }
+    }
 
     res.json({ success: true, document: doc, replacedId: existingId });
   } catch (err: unknown) {
@@ -407,6 +428,34 @@ router.get('/pending/:pendingId/pdf', async (req: Request, res: Response) => {
     const buffer = Buffer.from(pdfBase64, 'base64');
     res.set({ 'Content-Type': 'application/pdf', 'Content-Length': buffer.length.toString() });
     res.send(buffer);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: message });
+  }
+});
+
+// Re-scanner l’analyse fraude (PDF stocké)
+router.post('/:id/fraud-scan', async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+    const data = await redis.get(`document:${id}`);
+    const pdfBase64 = await redis.get(`document:${id}:pdf`);
+    if (!data) {
+      res.status(404).json({ error: 'Document not found' });
+      return;
+    }
+    if (!pdfBase64) {
+      res.status(400).json({ error: 'PDF manquant pour ce document' });
+      return;
+    }
+    const doc = JSON.parse(data) as Record<string, unknown>;
+    const buffer = Buffer.from(pdfBase64, 'base64');
+    const fraudAnalysis = await runFraudAnalysis(doc, buffer, {
+      skipLlm: req.body?.skipLlm === true,
+    });
+    doc.fraudAnalysis = fraudAnalysis;
+    await redis.set(`document:${id}`, JSON.stringify(doc));
+    res.json({ success: true, fraudAnalysis, document: doc });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     res.status(500).json({ error: message });

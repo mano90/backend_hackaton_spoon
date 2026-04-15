@@ -88,6 +88,20 @@ export function buildDossierDigestBlock(
       anomalies.push('Une seule pièce dans ce parcours (chaîne incomplète ou dossier minimal).');
     }
 
+    for (const d of docs) {
+      const fa = d.fraudAnalysis as
+        | { maxSeverity?: string; summary?: string; signals?: { code: string }[] }
+        | undefined;
+      if (fa?.signals && fa.signals.length > 0) {
+        const sev = fa.maxSeverity ?? 'signal';
+        const sum =
+          typeof fa.summary === 'string'
+            ? fa.summary.slice(0, 280)
+            : fa.signals.map((s) => s.code).join(', ');
+        anomalies.push(`Analyse fraude [${sev}] — document ${d.id} : ${sum}`);
+      }
+    }
+
     lines.push(`--- Parcours ${scenarioId}${fournisseur ? ` — fournisseur probable : ${fournisseur}` : ''} ---`);
     lines.push(`Nombre de pièces : ${docs.length}`);
     etapes.forEach((l) => lines.push(l));

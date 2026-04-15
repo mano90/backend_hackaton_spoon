@@ -4,6 +4,9 @@ import { extractTextFromPDF } from './pdf.service';
 import { extractFactureData } from '../agents/extractor.agent';
 import { classifyDocument, type ClassificationResult } from '../agents/classifier.agent';
 import { checkFactureSimilarity } from '../agents/similarity.agent';
+import { normalizeSiren } from '../utils/siren.util';
+import { normalizeIban } from '../utils/iban.util';
+import { runFraudAnalysis } from './fraud-analysis.service';
 
 export const VALID_DOC_TYPES = ['devis', 'bon_commande', 'bon_livraison', 'bon_reception', 'facture', 'email'] as const;
 export const CONFIDENCE_THRESHOLD = 75;
@@ -82,18 +85,44 @@ export async function ingestOnePdf(
         : classification.docType;
     const isUncertain = !forcedType && classification.confidence < CONFIDENCE_THRESHOLD;
 
+    const ext = extracted as Record<string, unknown>;
     const doc: Record<string, unknown> = {
       id: uuidv4(),
       fileName: originalName,
       rawText,
       docType,
-      montant: extracted.montant ?? null,
-      date: extracted.date || '',
-      fournisseur: extracted.fournisseur || '',
-      reference: extracted.reference || '',
+      montant: ext.montant ?? ext.montantTTC ?? null,
+      date: ext.date || '',
+      fournisseur: ext.fournisseur || '',
+      reference: ext.reference || '',
       type: docType,
       createdAt: new Date().toISOString(),
     };
+
+    const extraKeys = [
+      'montantHT',
+      'montantTVA',
+      'tauxTVA',
+      'montantTTC',
+      'bic',
+      'beneficiaireRIB',
+      'tvaIntracom',
+      'siren',
+      'siret',
+      'adresseFournisseur',
+      'libellePrestation',
+    ] as const;
+    for (const k of extraKeys) {
+      const v = ext[k];
+      if (v !== undefined && v !== null && v !== '') doc[k] = v;
+    }
+    const ib = normalizeIban(typeof ext.iban === 'string' ? ext.iban : null);
+    if (ib) doc.iban = ib;
+    const sn = normalizeSiren({
+      siren: typeof ext.siren === 'string' ? ext.siren : undefined,
+      siret: typeof ext.siret === 'string' ? ext.siret : undefined,
+    });
+    if (sn) doc.siren = sn;
 
     if (isUncertain) {
       p(3, 'persist_pending', 'Enregistrement provisoire (classification incertaine)');
@@ -190,6 +219,16 @@ export async function ingestOnePdf(
     if (body?.assignDefaultScenarioId !== false) {
       doc.scenarioId = uuidv4();
       await redis.set(`document:${doc.id}`, JSON.stringify(doc));
+    }
+
+    if (docType === 'facture') {
+      try {
+        const fraudAnalysis = await runFraudAnalysis(doc, buffer);
+        doc.fraudAnalysis = fraudAnalysis;
+        await redis.set(`document:${doc.id}`, JSON.stringify(doc));
+      } catch (e) {
+        console.error('[Fraud] ingest:', e);
+      }
     }
 
     return { kind: 'saved', document: doc, classification };

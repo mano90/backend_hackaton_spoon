@@ -21,14 +21,16 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
     const rawText = await extractTextFromPDF(req.file.buffer);
     const extracted = await extractFactureData(rawText);
 
+    const ex = extracted as Record<string, unknown>;
+    const montantNum = Number(ex.montant ?? ex.montantTTC ?? 0);
     const facture: Facture = {
       id: uuidv4(),
       fileName: req.file.originalname,
       rawText,
-      montant: extracted.montant || 0,
-      date: extracted.date || '',
-      fournisseur: extracted.fournisseur || '',
-      reference: extracted.reference || '',
+      montant: Number.isFinite(montantNum) ? montantNum : 0,
+      date: String(ex.date ?? ''),
+      fournisseur: String(ex.fournisseur ?? ''),
+      reference: String(ex.reference ?? ''),
       type: 'facture',
       createdAt: new Date().toISOString(),
     };
