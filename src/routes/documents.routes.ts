@@ -283,9 +283,9 @@ router.post('/confirm/:pendingId', async (req: Request, res: Response) => {
     }
 
     const resolvedType = String(doc.docType ?? doc.type ?? '');
-    if (pdfData && shouldCheckDuplicate(resolvedType)) {
-      const buffer = Buffer.from(pdfData, 'base64');
-      const dup = await tryCreateDuplicatePending(doc, buffer, resolvedType);
+    if (shouldCheckDuplicate(resolvedType)) {
+      const buffer = pdfData ? Buffer.from(pdfData, 'base64') : undefined;
+      const dup = await tryCreateDuplicatePending(doc, resolvedType, buffer);
       if (dup) {
         await redis.set(pendingKey, JSON.stringify(doc), 'EX', 600);
         await redis.set(`${pendingKey}:pdf`, pdfData, 'EX', 600);

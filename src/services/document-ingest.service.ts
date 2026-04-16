@@ -29,11 +29,13 @@ function duplicatePluralLabel(docType: string): string {
 /**
  * Détecte un doublon fort vs documents déjà enregistrés du même type ; met à jour `doc` (pendingKind, similarity) si oui.
  * N’écrit pas Redis — l’appelant persiste `document:pending:*` si besoin.
+ *
+ * @param pdfBuffer PDF (upload) ; si absent, la « taille fichier » pour l’agent vient du texte brut (import M3, etc.).
  */
 export async function tryCreateDuplicatePending(
   doc: Record<string, unknown>,
-  buffer: Buffer,
-  docType: string
+  docType: string,
+  pdfBuffer?: Buffer
 ): Promise<IngestPendingDuplicate | null> {
   if (!shouldCheckDuplicate(docType)) return null;
 
@@ -51,6 +53,11 @@ export async function tryCreateDuplicatePending(
 
   if (existingSameType.length === 0) return null;
 
+  const fileSize =
+    pdfBuffer && pdfBuffer.length > 0
+      ? pdfBuffer.length
+      : Buffer.byteLength(String(doc.rawText ?? ''), 'utf8');
+
   const similarity = await checkFactureSimilarity(
     {
       montant: (doc.montant as number) || 0,
@@ -58,7 +65,7 @@ export async function tryCreateDuplicatePending(
       fournisseur: doc.fournisseur as string,
       reference: doc.reference as string,
       rawText: doc.rawText as string,
-      fileSize: buffer.length,
+      fileSize,
     },
     existingSameType.map((f: Record<string, unknown>) => ({
       id: f.id as string,
@@ -85,6 +92,7 @@ export async function tryCreateDuplicatePending(
     existingFileName: (existingForPending?.fileName as string) || undefined,
   };
 
+  const pdfBytes = pdfBuffer && pdfBuffer.length > 0 ? pdfBuffer : Buffer.alloc(0);
   return {
     kind: 'pending_duplicate',
     pendingDocument: doc,
@@ -97,7 +105,7 @@ export async function tryCreateDuplicatePending(
           | Record<string, unknown>
           | null) ?? null,
     },
-    pdfBase64: buffer.toString('base64'),
+    pdfBase64: pdfBytes.toString('base64'),
   };
 }
 
@@ -202,7 +210,7 @@ export async function ingestOnePdf(
 
     if (shouldCheckDuplicate(docType)) {
       p(3, 'verify_duplicate', `Vérification des doublons (${duplicatePluralLabel(docType)})`);
-      const dup = await tryCreateDuplicatePending(doc, buffer, docType);
+      const dup = await tryCreateDuplicatePending(doc, docType, buffer);
       if (dup) {
         p(4, 'persist_pending', 'Enregistrement provisoire (doublon détecté)');
         const pendingKey = `document:pending:${doc.id}`;

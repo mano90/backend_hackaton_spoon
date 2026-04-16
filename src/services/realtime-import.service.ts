@@ -56,3 +56,23 @@ export function emitDocumentsBatchProgress(ev: DocumentsBatchProgressEvent): voi
     console.warn('[realtime-import] documents-batch emit failed:', e);
   }
 }
+
+/** Progression import factures M3 / INFOR (Socket.io — broadcast). */
+export type M3FacturesImportProgressEvent = {
+  phase: 'started' | 'processing' | 'done' | 'error';
+  message: string;
+  percent: number;
+  index?: number;
+  total?: number;
+  reference?: string;
+  outcome?: 'saved' | 'pending_duplicate';
+};
+
+export function emitM3FacturesImportProgress(ev: M3FacturesImportProgressEvent): void {
+  if (!io) return;
+  try {
+    io.emit('m3-factures:progress', ev);
+  } catch (e) {
+    console.warn('[realtime-import] m3-factures emit failed:', e);
+  }
+}
