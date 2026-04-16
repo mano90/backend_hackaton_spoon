@@ -23,9 +23,6 @@ export function daysSinceCompanyCreation(dateCreation: string | undefined): numb
 }
 
 export async function fetchUniteLegale(siren: string): Promise<SireneUniteLegaleInfo | null> {
-  const token = process.env.INSEE_API_KEY?.trim();
-  if (!token) return null;
-
   const cacheKey = `${CACHE_PREFIX}${siren}`;
   const cached = await redis.get(cacheKey);
   if (cached) {
@@ -35,6 +32,9 @@ export async function fetchUniteLegale(siren: string): Promise<SireneUniteLegale
       /* ignore */
     }
   }
+
+  const token = process.env.INSEE_API_KEY?.trim();
+  if (!token) return null;
 
   const base =
     process.env.INSEE_API_BASE?.replace(/\/$/, '') || 'https://api.insee.fr/entreprise/sirene/V3.11';

@@ -3,6 +3,7 @@ import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 import redis from './services/redis.service';
+import { runFraudAnalysis } from './services/fraud-analysis.service';
 
 // ─── 20 MOUVEMENTS ───
 const mouvements = [
@@ -52,6 +53,21 @@ interface FactureDef {
   fournisseur: string;
   reference: string;
   items: LineItem[];
+  /** SIRET affiché sur le PDF (défaut : aléatoire) */
+  siretHeader?: string;
+  /** TVA intracom affichée sur le PDF (défaut : aléatoire) */
+  tvaIntraHeader?: string;
+  /** Deux lignes d’adresse fournisseur sous le nom (défaut : adresse Paris générique) */
+  addressLines?: [string, string];
+  /** IBAN affiché dans le bloc paiement (défaut : FR76… Crédit Agricole) */
+  ibanFooter?: string;
+  /** BIC affiché dans le bloc paiement (défaut : AGRIFRPP) */
+  bicFooter?: string;
+  /** Métadonnées PDF (cas tests fraude éditeur / dates) */
+  pdfProducer?: string;
+  pdfCreator?: string;
+  pdfCreationDate?: Date;
+  pdfModificationDate?: Date;
 }
 
 const factures: FactureDef[] = [
@@ -320,22 +336,34 @@ const factures: FactureDef[] = [
 ];
 
 // ─── PDF GENERATION ───
-function generateFacturePDF(facture: FactureDef, outputPath: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: 'A4', margin: 50 });
-    const stream = fs.createWriteStream(outputPath);
-    doc.pipe(stream);
+function newPdfKitDocument(facture: FactureDef): InstanceType<typeof PDFDocument> {
+  const info: { Producer?: string; Creator?: string; CreationDate?: Date; ModDate?: Date } = {};
+  if (facture.pdfProducer) info.Producer = facture.pdfProducer;
+  if (facture.pdfCreator) info.Creator = facture.pdfCreator;
+  if (facture.pdfCreationDate) info.CreationDate = facture.pdfCreationDate;
+  if (facture.pdfModificationDate) info.ModDate = facture.pdfModificationDate;
+  return new PDFDocument({
+    size: 'A4',
+    margin: 50,
+    ...(Object.keys(info).length ? { info } : {}),
+  });
+}
 
-    const siret = `${Math.floor(Math.random() * 900000000 + 100000000)} 00012`;
-    const tvaIntra = `FR${Math.floor(Math.random() * 90 + 10)} ${Math.floor(Math.random() * 900000000 + 100000000)}`;
+function writeFacturePdfContent(doc: InstanceType<typeof PDFDocument>, facture: FactureDef): void {
+  const siret =
+    facture.siretHeader ?? `${Math.floor(Math.random() * 900000000 + 100000000)} 00012`;
+  const tvaIntra =
+    facture.tvaIntraHeader ??
+    `FR${Math.floor(Math.random() * 90 + 10)} ${Math.floor(Math.random() * 900000000 + 100000000)}`;
+  const addr = facture.addressLines ?? (['123 Rue du Commerce', '75001 Paris, France'] as [string, string]);
 
-    // ── Header: Fournisseur info ──
-    doc.fontSize(11).font('Helvetica-Bold').text(facture.fournisseur, 50, 50);
-    doc.fontSize(9).font('Helvetica');
-    doc.text('123 Rue du Commerce', 50, 65);
-    doc.text('75001 Paris, France', 50, 77);
-    doc.text(`SIRET: ${siret}`, 50, 89);
-    doc.text(`TVA Intra: ${tvaIntra}`, 50, 101);
+  // ── Header: Fournisseur info ──
+  doc.fontSize(11).font('Helvetica-Bold').text(facture.fournisseur, 50, 50);
+  doc.fontSize(9).font('Helvetica');
+  doc.text(addr[0], 50, 65);
+  doc.text(addr[1], 50, 77);
+  doc.text(`SIRET: ${siret}`, 50, 89);
+  doc.text(`TVA Intra: ${tvaIntra}`, 50, 101);
 
     // ── Title ──
     doc.moveDown(2);
@@ -456,10 +484,12 @@ function generateFacturePDF(facture: FactureDef, outputPath: string): Promise<vo
     // ── Payment info ──
     y += 40;
     doc.font('Helvetica').fontSize(9);
+    const ibanDisp = facture.ibanFooter ?? 'FR76 3000 6000 0112 3456 7890 189';
+    const bicDisp = facture.bicFooter ?? 'AGRIFRPP';
     doc.text('Conditions de paiement : 30 jours fin de mois', 50, y);
     doc.text('Mode de reglement : Virement bancaire', 50, y + 12);
-    doc.text('IBAN : FR76 3000 6000 0112 3456 7890 189', 50, y + 24);
-    doc.text('BIC : AGRIFRPP', 50, y + 36);
+    doc.text(`IBAN : ${ibanDisp}`, 50, y + 24);
+    doc.text(`BIC : ${bicDisp}`, 50, y + 36);
 
     // ── Footer ──
     doc.font('Helvetica').fontSize(7);
@@ -471,11 +501,398 @@ function generateFacturePDF(facture: FactureDef, outputPath: string): Promise<vo
       'En cas de retard de paiement, penalite de 3x le taux d\'interet legal + indemnite forfaitaire de 40 EUR.',
       50, 767, { align: 'center', width: 495 }
     );
+}
 
+function generateFacturePDF(facture: FactureDef, outputPath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const doc = newPdfKitDocument(facture);
+    const stream = fs.createWriteStream(outputPath);
+    doc.pipe(stream);
+    writeFacturePdfContent(doc, facture);
     doc.end();
     stream.on('finish', resolve);
     stream.on('error', reject);
   });
+}
+
+function generateFacturePdfBuffer(facture: FactureDef): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const doc = newPdfKitDocument(facture);
+    const chunks: Buffer[] = [];
+    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+    writeFacturePdfContent(doc, facture);
+    doc.end();
+  });
+}
+
+// ─── FRAUD TEST CASES (signaux déterministes, un PDF par code) ───
+const FRAUD_CASES_DIR = path.join(__dirname, '..', 'seed-factures', 'fraud-cases');
+const FRAUD_FIXTURE_REDIS_KEYS = [
+  'fraud:cache:sirene:111222333',
+  'fraud:cache:sirene:555666777',
+  'fraud:cache:vies:FR:99999999999',
+  'fraud:supplier:iban:siren:444555666',
+];
+
+interface FraudFixture {
+  ref: string;
+  preSeed?: () => Promise<void>;
+  /** Même modèle que les factures seed (PDFKit + lignes) */
+  facture: FactureDef;
+  /** Champs analytiques / fraude (montantHT, iban, etc.) — fusionnés dans le document Redis */
+  docExtra: Record<string, unknown>;
+}
+
+const fraudFixtures: FraudFixture[] = [
+  {
+    ref: 'FRAUD-HT-TVA-TTC',
+    facture: {
+      fournisseur: 'SARL Cas HT TVA',
+      date: '2026-04-10',
+      montant: 120,
+      reference: 'FAC-HT-001',
+      siretHeader: '100 100 100 00015',
+      tvaIntraHeader: 'FR12 100100100',
+      items: [
+        { description: 'Prestations diverses — lot 1', qty: 1, unitPriceHT: 45.0 },
+        { description: 'Prestations diverses — lot 2', qty: 1, unitPriceHT: 40.0 },
+      ],
+    },
+    docExtra: {
+      montantHT: 50,
+      montantTVA: 50,
+      siret: '100 100 100 00015',
+      tvaIntracom: 'FR12 100100100',
+      rawText: 'Facture test incohérence arithmétique.',
+      libellePrestation: 'Prestations diverses',
+      iban: 'FR7630006000011234567890189',
+    },
+  },
+  {
+    ref: 'FRAUD-PDF-EDITOR',
+    facture: {
+      fournisseur: 'SARL Cas PDF Editeur',
+      date: '2026-04-10',
+      montant: 600,
+      reference: 'FAC-PDF-ED-001',
+      siretHeader: '100 100 101 00013',
+      tvaIntraHeader: 'FR12 100100101',
+      pdfProducer: 'Adobe Acrobat',
+      pdfCreator: 'Adobe Acrobat',
+      items: [
+        { description: 'Conseil et audit', qty: 1, unitPriceHT: 300.0 },
+        { description: 'Accompagnement projet', qty: 1, unitPriceHT: 150.0 },
+      ],
+    },
+    docExtra: {
+      siret: '100 100 101 00013',
+      tvaIntracom: 'FR12 100100101',
+      rawText: 'Facture PDF métadonnées éditeur.',
+      libellePrestation: 'Conseil',
+      iban: 'FR7630006000011234567890189',
+    },
+  },
+  {
+    ref: 'FRAUD-PDF-MODDATE',
+    facture: {
+      fournisseur: 'SARL Cas PDF ModDate',
+      date: '2020-06-01',
+      montant: 600,
+      reference: 'FAC-MOD-001',
+      siretHeader: '100 100 102 00011',
+      tvaIntraHeader: 'FR12 100100102',
+      pdfCreationDate: new Date('2020-05-15T10:00:00Z'),
+      pdfModificationDate: new Date('2026-03-15T14:00:00Z'),
+      items: [
+        { description: 'Maintenance preventive', qty: 1, unitPriceHT: 280.0 },
+        { description: 'Mise a jour et support', qty: 1, unitPriceHT: 220.0 },
+      ],
+    },
+    docExtra: {
+      siret: '100 100 102 00011',
+      tvaIntracom: 'FR12 100100102',
+      rawText: 'Facture ancienne, PDF modifié récemment.',
+      libellePrestation: 'Maintenance',
+      iban: 'FR7630006000011234567890189',
+    },
+  },
+  {
+    ref: 'FRAUD-IBAN-HIST',
+    preSeed: async () => {
+      await redis.set(
+        'fraud:supplier:iban:siren:444555666',
+        JSON.stringify(['FR7630006000011234567890189'])
+      );
+    },
+    facture: {
+      fournisseur: 'SARL Cas IBAN historique',
+      date: '2026-04-10',
+      montant: 600,
+      reference: 'FAC-IBAN-001',
+      siretHeader: '444 555 666 00012',
+      tvaIntraHeader: 'FR12 444555666',
+      ibanFooter: 'FR14 2004 1010 0505 0001 3M02 606',
+      items: [
+        { description: 'Fournitures bureau', qty: 2, unitPriceHT: 120.0 },
+        { description: 'Petit materiel', qty: 1, unitPriceHT: 130.0 },
+      ],
+    },
+    docExtra: {
+      siret: '444 555 666 00012',
+      tvaIntracom: 'FR12 444555666',
+      rawText: 'RIB différent de l’historique simulé.',
+      libellePrestation: 'Fournitures',
+      iban: 'FR1420041010050500013M02606',
+    },
+  },
+  {
+    ref: 'FRAUD-IBAN-PAYS',
+    preSeed: async () => {
+      await redis.set(
+        'fraud:cache:sirene:555666777',
+        JSON.stringify({
+          siren: '555666777',
+          dateCreationUniteLegale: '2010-01-01',
+          paysSiege: 'FR',
+        })
+      );
+    },
+    facture: {
+      fournisseur: 'SARL Cas IBAN pays',
+      date: '2026-04-10',
+      montant: 600,
+      reference: 'FAC-DE-001',
+      siretHeader: '555 666 777 00012',
+      tvaIntraHeader: 'FR12 555666777',
+      ibanFooter: 'DE89 3704 0044 0532 0130 00',
+      bicFooter: 'COBADEFFXXX',
+      items: [
+        { description: 'Prestation technique', qty: 1, unitPriceHT: 350.0 },
+        { description: 'Deplacement', qty: 1, unitPriceHT: 150.0 },
+      ],
+    },
+    docExtra: {
+      siret: '555 666 777 00012',
+      tvaIntracom: 'FR12 555666777',
+      rawText: 'IBAN allemand vs siège FR (cache SIRENE).',
+      libellePrestation: 'Prestation',
+      iban: 'DE89370400440532013000',
+    },
+  },
+  {
+    ref: 'FRAUD-SOCIETE-RECENTE',
+    preSeed: async () => {
+      await redis.set(
+        'fraud:cache:sirene:111222333',
+        JSON.stringify({
+          siren: '111222333',
+          dateCreationUniteLegale: new Date().toISOString().slice(0, 10),
+          paysSiege: 'FR',
+        })
+      );
+    },
+    facture: {
+      fournisseur: 'SARL Cas Société récente',
+      date: '2026-04-10',
+      montant: 600,
+      reference: 'FAC-NEW-001',
+      siretHeader: '111 222 333 00012',
+      tvaIntraHeader: 'FR12 111222333',
+      items: [
+        { description: 'Service informatique', qty: 1, unitPriceHT: 400.0 },
+        { description: 'Licence logicielle', qty: 1, unitPriceHT: 100.0 },
+      ],
+    },
+    docExtra: {
+      siret: '111 222 333 00012',
+      tvaIntracom: 'FR12 111222333',
+      rawText: 'Entreprise jeune (cache SIRENE).',
+      libellePrestation: 'Service',
+      iban: 'FR7630006000011234567890189',
+    },
+  },
+  {
+    ref: 'FRAUD-TVA-VIES',
+    preSeed: async () => {
+      await redis.set('fraud:cache:vies:FR:99999999999', '0');
+    },
+    facture: {
+      fournisseur: 'SARL Cas TVA VIES',
+      date: '2026-04-10',
+      montant: 600,
+      reference: 'FAC-VIES-001',
+      siretHeader: '100 100 103 00019',
+      tvaIntraHeader: 'FR99999999999',
+      items: [
+        { description: 'Mission conseil', qty: 1, unitPriceHT: 350.0 },
+        { description: 'Rapport et livrables', qty: 1, unitPriceHT: 150.0 },
+      ],
+    },
+    docExtra: {
+      siret: '100 100 103 00019',
+      tvaIntracom: 'FR99999999999',
+      rawText: 'TVA invalidée en cache VIES.',
+      libellePrestation: 'Conseil',
+      iban: 'FR7630006000011234567890189',
+    },
+  },
+  {
+    ref: 'FRAUD-TVA-ABSENTE',
+    facture: {
+      fournisseur: 'SARL Cas TVA absente',
+      date: '2026-04-10',
+      montant: 600,
+      reference: 'FAC-NO-TVA-001',
+      siretHeader: '100 100 104 00017',
+      tvaIntraHeader: 'FR12 100100104',
+      items: [
+        { description: 'Fournitures et consommables', qty: 1, unitPriceHT: 300.0 },
+        { description: 'Livraison', qty: 1, unitPriceHT: 200.0 },
+      ],
+    },
+    docExtra: {
+      siret: '100 100 104 00017',
+      rawText: 'Pas de ligne TVA intracom extraite, montant > 50 €.',
+      libellePrestation: 'Fournitures',
+      iban: 'FR7630006000011234567890189',
+    },
+  },
+  {
+    ref: 'FRAUD-NUM-001',
+    facture: {
+      fournisseur: 'SARL Cas Numéro 001',
+      date: '2026-04-10',
+      montant: 600,
+      reference: 'n° 1',
+      siretHeader: '100 100 105 00015',
+      tvaIntraHeader: 'FR12 100100105',
+      items: [
+        { description: 'Pack demarrage', qty: 1, unitPriceHT: 400.0 },
+        { description: 'Options', qty: 1, unitPriceHT: 100.0 },
+      ],
+    },
+    docExtra: {
+      siret: '100 100 105 00015',
+      tvaIntracom: 'FR12 100100105',
+      rawText: 'Première facture.',
+      libellePrestation: 'Pack',
+      iban: 'FR7630006000011234567890189',
+    },
+  },
+  {
+    ref: 'FRAUD-MONTANT-SEUIL',
+    facture: {
+      fournisseur: 'SARL Cas Sous seuil',
+      date: '2026-04-10',
+      montant: 199,
+      reference: 'FAC-SEUIL-001',
+      siretHeader: '100 100 106 00013',
+      tvaIntraHeader: 'FR12 100100106',
+      items: [
+        { description: 'Frais de dossier', qty: 1, unitPriceHT: 120.0 },
+        { description: 'Frais administratifs', qty: 1, unitPriceHT: 46.0 },
+      ],
+    },
+    docExtra: {
+      siret: '100 100 106 00013',
+      tvaIntracom: 'FR12 100100106',
+      rawText: 'Petit montant sous seuil auto.',
+      libellePrestation: 'Frais',
+      iban: 'FR7630006000011234567890189',
+    },
+  },
+  {
+    ref: 'FRAUD-MOT-CLEF',
+    facture: {
+      fournisseur: 'SARL Cas Mot-clé',
+      date: '2026-04-10',
+      montant: 600,
+      reference: 'FAC-KW-001',
+      siretHeader: '100 100 107 00011',
+      tvaIntraHeader: 'FR12 100100107',
+      items: [
+        { description: 'Renouvellement annuaire professionnel', qty: 1, unitPriceHT: 350.0 },
+        { description: 'Cotisation standard', qty: 1, unitPriceHT: 150.0 },
+      ],
+    },
+    docExtra: {
+      siret: '100 100 107 00011',
+      tvaIntracom: 'FR12 100100107',
+      rawText: 'Renouvellement annuaire professionnel et cotisation standard.',
+      libellePrestation: 'annuaire',
+      iban: 'FR7630006000011234567890189',
+    },
+  },
+  {
+    ref: 'FRAUD-ADRESSE-DOMICILIATION',
+    facture: {
+      fournisseur: 'SARL Cas Domiciliation',
+      date: '2026-04-10',
+      montant: 600,
+      reference: 'FAC-DOM-001',
+      siretHeader: '100 100 108 00019',
+      tvaIntraHeader: 'FR12 100100108',
+      addressLines: ['BP 90201 — centre d’affaires domiciliation', '75001 Paris, France'],
+      items: [
+        { description: 'Honoraires de gestion', qty: 1, unitPriceHT: 400.0 },
+        { description: 'Tenue de compte', qty: 1, unitPriceHT: 100.0 },
+      ],
+    },
+    docExtra: {
+      siret: '100 100 108 00019',
+      tvaIntracom: 'FR12 100100108',
+      adresseFournisseur: 'BP 90201 centre d’affaires domiciliation — 75001 Paris',
+      rawText: 'Siège en domiciliation.',
+      libellePrestation: 'Honoraires',
+      iban: 'FR7630006000011234567890189',
+    },
+  },
+];
+
+async function seedFraudCaseDocuments(): Promise<void> {
+  if (!fs.existsSync(FRAUD_CASES_DIR)) fs.mkdirSync(FRAUD_CASES_DIR, { recursive: true });
+  for (const f of fs.readdirSync(FRAUD_CASES_DIR)) {
+    if (f.endsWith('.pdf')) fs.unlinkSync(path.join(FRAUD_CASES_DIR, f));
+  }
+
+  console.log('\n--- Seeding fraud case factures (deterministic signals) ---');
+
+  for (const fx of fraudFixtures) {
+    if (fx.preSeed) await fx.preSeed();
+
+    const buffer = await generateFacturePdfBuffer(fx.facture);
+    const fileName = `${fx.ref}.pdf`;
+    fs.writeFileSync(path.join(FRAUD_CASES_DIR, fileName), buffer);
+
+    const id = uuidv4();
+    const doc: Record<string, unknown> = {
+      id,
+      fileName,
+      rawText: (fx.docExtra.rawText as string) ?? '',
+      docType: 'facture',
+      type: 'facture',
+      createdAt: new Date().toISOString(),
+      montant: fx.facture.montant,
+      date: fx.facture.date,
+      fournisseur: fx.facture.fournisseur,
+      reference: fx.facture.reference,
+      ...fx.docExtra,
+    };
+
+    const fraudAnalysis = await runFraudAnalysis(doc, buffer, { skipLlm: true });
+    doc.fraudAnalysis = fraudAnalysis;
+
+    await redis.set(`document:${id}`, JSON.stringify(doc));
+    await redis.set(`document:${id}:pdf`, buffer.toString('base64'));
+    await redis.sadd('document:ids', id);
+
+    const codes = fraudAnalysis.signals.map((s) => s.code).join(', ') || '(aucun)';
+    console.log(`  ${fileName} → ${codes}`);
+  }
+
+  console.log(`  Stored ${fraudFixtures.length} fraud demo factures in Redis + ${FRAUD_CASES_DIR}`);
 }
 
 // ─── MAIN SEED ───
@@ -483,6 +900,10 @@ export async function seed() {
   const ALL_TYPES = ['mouvement', 'rapprochement', 'document'];
 
   console.log('--- Clearing existing data ---');
+  if (FRAUD_FIXTURE_REDIS_KEYS.length) {
+    await redis.del(...FRAUD_FIXTURE_REDIS_KEYS);
+  }
+
   for (const t of ALL_TYPES) {
     const ids = await redis.smembers(`${t}:ids`);
     if (ids.length) {
@@ -534,6 +955,9 @@ export async function seed() {
     console.log(`  ${fileName} | ${f.montant.toFixed(2)} EUR | ${f.fournisseur}`);
   }
   await fPipe.exec();
+
+  // ── Fraud deterministic signal demos (one PDF per code) ──
+  await seedFraudCaseDocuments();
 
   // ── Generate & store full document chain (devis, BC, BL, BR, factures, emails) ──
   console.log('\n--- Generating document chain PDFs ---');
