@@ -11,6 +11,8 @@ import statsRoutes from "./routes/stats.routes";
 import documentsRoutes from "./routes/documents.routes";
 import timelineRoutes from "./routes/timeline.routes";
 import configRoutes from "./routes/config.routes";
+import m3Routes from "./routes/m3.routes";
+import ionConfigRoutes from "./routes/ion-config.routes";
 import { attachRealtime } from "./services/realtime-import.service";
 
 dotenv.config();
@@ -36,6 +38,8 @@ app.use("/api/stats", statsRoutes);
 app.use("/api/timeline", timelineRoutes);
 app.use("/api/config", configRoutes);
 app.use('/api/emails', emailRoutes);
+app.use('/api/m3', m3Routes);
+app.use('/api/ion-config', ionConfigRoutes);
 
 // Health check
 app.get("/api/health", (_req, res) => {
