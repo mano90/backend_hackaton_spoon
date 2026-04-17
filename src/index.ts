@@ -13,6 +13,7 @@ import timelineRoutes from "./routes/timeline.routes";
 import configRoutes from "./routes/config.routes";
 import m3Routes from "./routes/m3.routes";
 import ionConfigRoutes from "./routes/ion-config.routes";
+import integrationsRoutes from "./routes/integrations.routes";
 import { attachRealtime } from "./services/realtime-import.service";
 import { requireAuth } from "./middleware/auth.middleware";
 
@@ -26,7 +27,7 @@ app.use(
     origin: "http://localhost:4200",
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 app.use(express.json());
 
@@ -50,6 +51,12 @@ app.use("/api/config", configRoutes);
 app.use("/api/emails", emailRoutes);
 app.use("/api/m3", m3Routes);
 app.use("/api/ion-config", ionConfigRoutes);
+app.use("/api/integrations", integrationsRoutes);
+
+// Health check
+app.get("/api/health", (_req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
 
 const httpServer = createServer(app);
 attachRealtime(httpServer);

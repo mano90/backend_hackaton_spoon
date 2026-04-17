@@ -47,6 +47,25 @@ export function emitImportProgress(ev: ImportProgressEvent): void {
   }
 }
 
+/** Progression sync Salesforce */
+export type SalesforceSyncProgressEvent = {
+  phase: 'started' | 'fetching' | 'saving' | 'downloading_pdf' | 'done' | 'error';
+  message: string;
+  percent: number;
+  objectName?: string;
+  current?: number;
+  total?: number;
+};
+
+export function emitSalesforceSyncProgress(ev: SalesforceSyncProgressEvent): void {
+  if (!io) return;
+  try {
+    io.emit('salesforce-sync:progress', ev);
+  } catch (e) {
+    console.warn('[realtime-import] salesforce-sync emit failed:', e);
+  }
+}
+
 /** Diffuse la progression upload-batch PDF à **tous** les clients Socket.io connectés. */
 export function emitDocumentsBatchProgress(ev: DocumentsBatchProgressEvent): void {
   if (!io) return;
