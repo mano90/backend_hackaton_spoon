@@ -14,6 +14,7 @@ import configRoutes from "./routes/config.routes";
 import m3Routes from "./routes/m3.routes";
 import ionConfigRoutes from "./routes/ion-config.routes";
 import integrationsRoutes from "./routes/integrations.routes";
+import adminRoutes from "./routes/admin.routes";
 import { attachRealtime } from "./services/realtime-import.service";
 import { requireAuth } from "./middleware/auth.middleware";
 
@@ -52,6 +53,7 @@ app.use("/api/emails", emailRoutes);
 app.use("/api/m3", m3Routes);
 app.use("/api/ion-config", ionConfigRoutes);
 app.use("/api/integrations", integrationsRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Health check
 app.get("/api/health", (_req, res) => {
