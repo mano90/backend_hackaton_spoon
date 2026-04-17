@@ -197,6 +197,89 @@ async function callApi<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
+// ── Generic SOQL query ──────────────────────────────────────
+export async function query<T = Record<string, unknown>>(soql: string): Promise<T[]> {
+  const data = await callApi<{ totalSize: number; done: boolean; records: T[]; nextRecordsUrl?: string }>(
+    `/services/data/${API_VERSION}/query/?q=${encodeURIComponent(soql)}`
+  );
+  let records = data.records ?? [];
+  // Handle pagination
+  let nextUrl = data.nextRecordsUrl;
+  while (nextUrl) {
+    const next = await callApi<{ records: T[]; nextRecordsUrl?: string }>(nextUrl);
+    records = records.concat(next.records ?? []);
+    nextUrl = next.nextRecordsUrl;
+  }
+  return records;
+}
+
+// ── Describe object (get all field names) ───────────────────
+export interface SObjectField {
+  name: string;
+  label: string;
+  type: string;
+  referenceTo?: string[];
+}
+export async function describeObject(objectName: string): Promise<SObjectField[]> {
+  const data = await callApi<{ fields: SObjectField[] }>(
+    `/services/data/${API_VERSION}/sobjects/${objectName}/describe`
+  );
+  return data.fields ?? [];
+}
+
+// ── Query all records of an object with optional date filter ─
+export async function queryAllRecords(
+  objectName: string,
+  options?: { dateField?: string; dateFrom?: string; dateTo?: string }
+): Promise<Record<string, unknown>[]> {
+  const fields = await describeObject(objectName);
+  // Only keep queryable scalar fields (skip compounds like Address)
+  const fieldNames = fields
+    .filter(f => !['address', 'location'].includes(f.type))
+    .map(f => f.name);
+  let soql = `SELECT ${fieldNames.join(',')} FROM ${objectName}`;
+  const conditions: string[] = [];
+  if (options?.dateField && options?.dateFrom) {
+    conditions.push(`${options.dateField} >= ${options.dateFrom}`);
+  }
+  if (options?.dateField && options?.dateTo) {
+    conditions.push(`${options.dateField} <= ${options.dateTo}`);
+  }
+  if (conditions.length) soql += ` WHERE ${conditions.join(' AND ')}`;
+  soql += ` ORDER BY CreatedDate DESC`;
+  return query(soql);
+}
+
+// ── Download file content (ContentVersion body) ─────────────
+export async function downloadFileBody(contentVersionId: string): Promise<Buffer> {
+  const session = await getSession();
+  if (!session) throw new Error('Non connecté à Salesforce.');
+  const url = `${session.instanceUrl}/services/data/${API_VERSION}/sobjects/ContentVersion/${contentVersionId}/VersionData`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${session.accessToken}` },
+  });
+  if (!res.ok) throw new Error(`Salesforce download ${res.status}`);
+  const arrayBuf = await res.arrayBuffer();
+  return Buffer.from(arrayBuf);
+}
+
+// ── Get ContentVersions linked to a record ──────────────────
+export async function getLinkedFiles(recordId: string): Promise<{ contentVersionId: string; title: string; fileExtension: string }[]> {
+  const links = await query<{ ContentDocumentId: string }>(
+    `SELECT ContentDocumentId FROM ContentDocumentLink WHERE LinkedEntityId = '${recordId}'`
+  );
+  if (!links.length) return [];
+  const docIds = links.map(l => `'${l.ContentDocumentId}'`).join(',');
+  const versions = await query<{ Id: string; Title: string; FileExtension: string }>(
+    `SELECT Id, Title, FileExtension FROM ContentVersion WHERE ContentDocumentId IN (${docIds}) AND IsLatest = true`
+  );
+  return versions.map(v => ({
+    contentVersionId: v.Id,
+    title: v.Title,
+    fileExtension: v.FileExtension,
+  }));
+}
+
 export async function listSObjects(): Promise<{ total: number; objects: SalesforceSObject[] }> {
   const data = await callApi<{ sobjects: SalesforceSObject[] }>(
     `/services/data/${API_VERSION}/sobjects/`

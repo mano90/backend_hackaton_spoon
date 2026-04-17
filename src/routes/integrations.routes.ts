@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import * as salesforce from '../services/salesforce.service';
+import { syncFromSalesforce } from '../services/salesforce-sync.service';
 
 const router = Router();
 
@@ -41,6 +42,20 @@ router.post('/salesforce/disconnect', async (_req: Request, res: Response) => {
 router.get('/salesforce/sobjects', async (_req: Request, res: Response) => {
   try {
     const result = await salesforce.listSObjects();
+    res.json(result);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+router.post('/salesforce/sync', async (req: Request, res: Response) => {
+  try {
+    const { dateFrom, dateTo, includeEmails } = req.body ?? {};
+    const result = await syncFromSalesforce({
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
+      includeEmails: !!includeEmails,
+    });
     res.json(result);
   } catch (err: any) {
     res.status(400).json({ error: err.message });
